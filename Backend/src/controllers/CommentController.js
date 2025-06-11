@@ -21,11 +21,11 @@ export const createComment = async (req, res) => {
 };
 
 export const likeComment = async (req, res) => {
-  const comment = await Comment.findByIdAndUpdate(
-    req.params.id,
-    { $inc: { likes: 1 } },
-    { new: true }
-  );
+  const comment = await Comment.findById(req.params.id);
   if (!comment) return res.status(404).json({ message: "Comment not found" });
+  if (!comment.likes.includes(req.user._id)) {
+    comment.likes.push(req.user._id); // Sử dụng mảng để tránh trùng lặp
+    await comment.save();
+  }
   res.json(comment);
 };

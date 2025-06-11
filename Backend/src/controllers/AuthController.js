@@ -7,7 +7,7 @@ export const getUser = (req, res) => {
 
 export const wordpressCallback = (req, res) => {
   const token = jwt.sign(
-    { id: req.user._id, name: req.user.name },
+    { id: req.user._id, name: req.user.name, role: req.user.role },
     process.env.JWT_SECRET,
     { expiresIn: "1h" }
   );
@@ -16,7 +16,7 @@ export const wordpressCallback = (req, res) => {
 
 export const googleCallback = (req, res) => {
   const token = jwt.sign(
-    { id: req.user._id, name: req.user.name },
+    { id: req.user._id, name: req.user.name, role: req.user.role },
     process.env.JWT_SECRET,
     { expiresIn: "1h" }
   );
@@ -25,7 +25,7 @@ export const googleCallback = (req, res) => {
 
 export const githubCallback = (req, res) => {
   const token = jwt.sign(
-    { id: req.user._id, name: req.user.name },
+    { id: req.user._id, name: req.user.name, role: req.user.role },
     process.env.JWT_SECRET,
     { expiresIn: "1h" }
   );
@@ -34,7 +34,7 @@ export const githubCallback = (req, res) => {
 
 export const facebookCallback = (req, res) => {
   const token = jwt.sign(
-    { id: req.user._id, name: req.user.name },
+    { id: req.user._id, name: req.user.name, role: req.user.role },
     process.env.JWT_SECRET,
     { expiresIn: "1h" }
   );

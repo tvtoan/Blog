@@ -13,6 +13,9 @@ export const getPost = async (req, res) => {
 
 export const createPost = async (req, res) => {
   const { title, content, excerpt, image } = req.body;
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ message: "Only admins can create posts" });
+  }
   const post = new Post({
     title,
     content,
