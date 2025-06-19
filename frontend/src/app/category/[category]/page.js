@@ -1,31 +1,38 @@
 "use client";
-
-import { useEffect, useState } from "react";
-import { postsData } from "../data";
+import React, { useState, use } from "react";
+import { postsData } from "../../../data";
 import Link from "next/link";
 import DividerIcon from "@/components/DividerIcon";
 import Image from "next/image";
 import { FaArrowRight } from "react-icons/fa6";
+import { slugifyCategory } from "../../../lib/slugifyCategory"; //  import hàm slugify
+import { getOriginalCategoryFromSlug } from "@/lib/categoryHelpers";
 
-export default function Home() {
-  const [posts, setPosts] = useState([]);
-  const [displayCount, setDisplayCount] = useState(8); // Initial display limit of 8 posts
+export default function CategoryPage({ params }) {
+  const { category } = use(params);
 
-  useEffect(() => {
-    setPosts(postsData);
-  }, []);
+  const filteredPosts = postsData.filter((post) =>
+    post.categories?.some(
+      (cat) => slugifyCategory(cat) === category // so sánh slug
+    )
+  );
 
-  // Function to handle "Older Posts" button click
+  const [displayCount, setDisplayCount] = useState(8);
+
   const handleLoadMore = () => {
-    setDisplayCount((prevCount) => prevCount + 8); // Load 8 more posts
+    setDisplayCount((prevCount) => prevCount + 8);
   };
 
-  // Slice posts to display only up to displayCount
-  const displayedPosts = posts.slice(0, displayCount);
+  const displayedPosts = filteredPosts.slice(0, displayCount);
+  const originalCategory = getOriginalCategoryFromSlug(category);
 
   return (
     <div className="container mx-auto p-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <h1 className="text-[40px] text-center mb-14">
+        Category: {originalCategory}
+      </h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         {displayedPosts.length > 0 ? (
           displayedPosts.map((post) => (
             <div
@@ -36,7 +43,7 @@ export default function Home() {
                 {post.title.toUpperCase()}
               </h2>
               <DividerIcon size={150} />
-              <div className="text-gray-500 flex gap-5 text-[13px] mb-5">
+              <div className="text-[#7687a5] flex gap-5 text-[13px] mb-5">
                 <div>
                   {new Date(post.createdAt).toLocaleDateString("en-US", {
                     month: "long",
@@ -53,7 +60,7 @@ export default function Home() {
                 height={600}
                 className="rounded-lg mb-4 w-full h-64 object-cover"
               />
-              <p className="text-gray-600 text-center mb-6">
+              <p className="text-gray-600 text-left mb-6">
                 {post.excerpt || "No excerpt"}
               </p>
               <div className="bg-gray-100 text-black hover:bg-gray-200 py-3 px-4 w-full rounded relative group transition-colors duration-1000">
@@ -68,16 +75,17 @@ export default function Home() {
             </div>
           ))
         ) : (
-          <p className="text-center text-gray-500">No posts available.</p>
+          <p className="text-center text-[#7687a5]">
+            Không có bài viết nào trong thể loại này.
+          </p>
         )}
       </div>
 
-      {/* "Older Posts" button */}
-      {displayCount < posts.length && (
+      {displayCount < filteredPosts.length && (
         <div className="text-center mt-8">
           <button
             onClick={handleLoadMore}
-            className="bg-gray-100 text-sm mb-16 text-black hover:bg-gray-200 py-3 px-6 rounded transition-colors duration-300"
+            className="bg-gray-100 text-sm text-black hover:bg-gray-200 py-3 px-6 rounded transition-colors duration-300"
           >
             OLDER POSTS
           </button>

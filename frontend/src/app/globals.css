@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+html {
+  font-family: "Montserrat", sans-serif;
+}
 body {
   background: white; /* Màu nền mặc định */
   color: #333; /* Màu chữ mặc định */

@@ -1,19 +1,42 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { FaFacebookF, FaInstagram, FaYoutube } from "react-icons/fa";
 import { MdKeyboardArrowDown } from "react-icons/md";
+import { postsData } from "../data";
+import { montserrat } from "../lib/font"; // Assuming you have a montserrat font import
 
 const Header = () => {
   const [isBlogOpen, setIsBlogOpen] = useState(false);
+  const closeTimeoutRef = useRef(null);
+
+  // Lấy danh sách categories từ postsData
+  const categories = Array.from(
+    new Set(postsData.flatMap((post) => post.categories || []))
+  );
+
+  // Khi hover vào, mở dropdown và hủy timeout đóng
+  const handleMouseEnter = () => {
+    clearTimeout(closeTimeoutRef.current);
+    setIsBlogOpen(true);
+  };
+
+  // Khi rời chuột, chờ 1s rồi mới tắt dropdown
+  const handleMouseLeave = () => {
+    closeTimeoutRef.current = setTimeout(() => {
+      setIsBlogOpen(false);
+    }, 1000);
+  };
 
   return (
-    <header className="bg-[#ececec] px-[100px] py-5 flex justify-between items-center font-sans text-sm border-b border-gray-200">
+    <header
+      className={`bg-[#ececec] px-[100px] py-[18px] flex justify-between items-center font-sans text-[12px] border-b border-gray-200 ${montserrat.className}`}
+    >
       {/* Left menu */}
       <nav className="flex items-center space-x-6 relative">
         <Link
           href="/"
-          className="text-[#585656] font-medium hover:text-[#e1c680] transition-colors"
+          className="text-[#585656] font-[400] hover:text-[#e1c680] transition-colors"
         >
           HOME
         </Link>
@@ -21,34 +44,22 @@ const Header = () => {
         {/* BLOG dropdown */}
         <div
           className="relative"
-          onMouseEnter={() => setIsBlogOpen(true)}
-          onMouseLeave={() => setIsBlogOpen(false)}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
         >
           <Link
-            href="/blog"
-            className="text-[#e1c680] font-medium hover:text-[#e1c680] transition-colors"
+            href="/category"
+            className="text-[#e1c680] font-[400] hover:text-[#e1c680] transition-colors"
           >
-            BLOG <MdKeyboardArrowDown className="inline-block  w-5 h-5" />
+            BLOG <MdKeyboardArrowDown className="inline-block w-5 h-5" />
           </Link>
 
           {isBlogOpen && (
             <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 shadow-md min-w-[200px] z-50">
-              {[
-                "Minimalism",
-                "Lifestyle",
-                "Nhật ký",
-                "Cuộc sống ở Nhật Bản",
-                "Cuộc sống ở Hà Nội",
-                "Hành trình của mình",
-                "Học ngôn ngữ",
-                "Productivity",
-                "Đọc sách",
-                "Nấu ăn",
-                "Khám phá & Du lịch",
-              ].map((item, index) => (
+              {categories.map((item, index) => (
                 <Link
                   key={index}
-                  href={`/blog/${item.toLowerCase().replace(/\s+/g, "-")}`}
+                  href={`/category/${item.toLowerCase().replace(/\s+/g, "-")}`}
                   className="block px-4 py-2 text-[#585656] hover:bg-gray-100 hover:text-[#e1c680] transition-colors"
                 >
                   {item}
@@ -60,23 +71,24 @@ const Header = () => {
 
         <Link
           href="/youtube"
-          className="text-[#585656] font-medium hover:text-[#e1c680] transition-colors"
+          className="text-[#585656] font-[400] hover:text-[#e1c680] transition-colors"
         >
           YOUTUBE
         </Link>
         <Link
           href="/about"
-          className="text-[#585656] font-medium hover:text-[#e1c680] transition-colors"
+          className="text-[#585656] font-[400] hover:text-[#e1c680] transition-colors"
         >
           ABOUT ME
         </Link>
         <Link
           href="/jp"
-          className="text-[#585656] font-medium hover:text-[#e1c680] transition-colors"
+          className="text-[#585656] font-[400] hover:text-[#e1c680] transition-colors"
         >
           日本語
         </Link>
       </nav>
+
       {/* Right social icons */}
       <div className="flex space-x-4">
         <a

@@ -35,7 +35,7 @@ export default function CommentSection({ postId }) {
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <div className={`container mx-auto p-4 ${montserrat.className}`}>
       <h2 className="text-2xl font-bold mb-4">Comments</h2>
       <form onSubmit={handleSubmit} className="mb-4">
         <textarea
