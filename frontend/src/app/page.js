@@ -77,7 +77,7 @@ export default function Home() {
         <div className="text-center mt-8">
           <button
             onClick={handleLoadMore}
-            className="bg-gray-100 text-sm mb-16 text-black hover:bg-gray-200 py-3 px-6 rounded transition-colors duration-300"
+            className="bg-gray-100 cursor-pointer text-sm mb-16 text-black hover:bg-gray-200 py-3 px-6 rounded transition-colors duration-300"
           >
             OLDER POSTS
           </button>

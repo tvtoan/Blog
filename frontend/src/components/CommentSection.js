@@ -1,65 +1,88 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Comment from "./Comment";
+import { commentsData } from "../data"; // ✅ import đúng (theo export const)
+import { montserrat } from "../lib/font";
+import DividerIcon from "./DividerIcon";
 
-export default function CommentSection({ postId }) {
+export default function CommentSection({ post }) {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/comment/${postId}`)
-      .then((res) => res.json())
-      .then((data) => setComments(data));
-  }, [postId]);
+    //  Tách các comment theo tầng
+    const map = new Map();
+    const roots = [];
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const token = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("token="))
-      ?.split("=")[1];
-    if (!token) return alert("Please log in to comment");
-
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/comment`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ content: newComment, postId }),
+    // Gộp theo ID để build cây
+    commentsData.forEach((c) => {
+      map.set(c._id, { ...c, replies: [] });
     });
+
+    // Gắn reply vào parent
+    map.forEach((comment) => {
+      if (comment.parentId) {
+        const parent = map.get(comment.parentId);
+        if (parent) parent.replies.push(comment);
+      } else {
+        roots.push(comment); // top-level
+      }
+    });
+
+    setComments(roots);
+  }, []);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    alert("Fake comment submitted (demo mode)");
     setNewComment("");
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/comment/${postId}`)
-      .then((res) => res.json())
-      .then((data) => setComments(data));
   };
 
   return (
-    <div className={`container mx-auto p-4 ${montserrat.className}`}>
-      <h2 className="text-2xl font-bold mb-4">Comments</h2>
-      <form onSubmit={handleSubmit} className="mb-4">
+    <div className={`container mx-auto  p-4 w-full ${montserrat.className}`}>
+      <h2 className="text-[20] font-[500] mb-2 text-center uppercase">
+        {comments.length} THOUGHTS ON {post.title}
+      </h2>
+      <DividerIcon size={200} />
+
+      {/* Comment List */}
+      {comments.length === 0 ? (
+        <p className="text-gray-500 text-center">No comments yet.</p>
+      ) : (
+        comments.map((comment, index) => (
+          <Comment
+            key={comment._id}
+            comment={{ ...comment, index: index + 1 }}
+            replies={comment.replies}
+          />
+        ))
+      )}
+      <div className="text-center font-[400] text-2xl">LEAVE A COMMENT</div>
+      <DividerIcon size={200} />
+      {/* Form */}
+      <form
+        onSubmit={handleSubmit}
+        className="border border-gray-300 mb-10 mt-6 rounded"
+      >
+        {/* Textarea */}
         <textarea
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
-          className="w-full p-2 border rounded"
+          className="w-full p-6 rounded-t resize-none h-[150px] focus:outline-none text-sm text-black placeholder:text-gray-500"
           placeholder="Write a comment..."
         />
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded mt-2"
-        >
-          Submit
-        </button>
-      </form>
-      {comments.map((comment) => (
-        <div key={comment._id} className="mb-2 p-2 bg-white rounded shadow">
-          <p className="text-gray-700">{comment.content}</p>
-          <p className="text-sm text-gray-500">
-            By {comment.user.name} on{" "}
-            {new Date(comment.createdAt).toLocaleDateString()}
-          </p>
+
+        {/* Button container */}
+        <div className="flex justify-end border-t border-gray-300 px-4 py-3">
+          <button
+            type="submit"
+            className="text-xs text-gray-500 border border-gray-300 px-4 py-2 rounded hover:bg-gray-100 transition"
+          >
+            Comment
+          </button>
         </div>
-      ))}
+      </form>
     </div>
   );
 }

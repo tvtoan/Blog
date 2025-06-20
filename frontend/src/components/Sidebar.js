@@ -118,7 +118,7 @@ const Sidebar = () => {
           .map(([monthYear, count]) => (
             <p
               key={monthYear}
-              className="block text-sm mb-5 font-[500] group transition-colors duration-300 hover:text-[#f1c40f]"
+              className="block cursor-pointer text-sm mb-5 font-[500] group transition-colors duration-300 hover:text-[#f1c40f]"
             >
               <span className="text-black group-hover:text-[#f1c40f]">
                 {monthYear}

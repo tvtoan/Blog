@@ -1,7 +1,10 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { FaFacebookF, FaInstagram, FaYoutube } from "react-icons/fa";
+import { FaYoutube } from "react-icons/fa";
+import { IoLogoFacebook } from "react-icons/io";
+import { ImInstagram } from "react-icons/im";
+import { AiFillTikTok } from "react-icons/ai";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { postsData } from "../data";
 import { montserrat } from "../lib/font"; // Assuming you have a montserrat font import
@@ -90,14 +93,22 @@ const Header = () => {
       </nav>
 
       {/* Right social icons */}
-      <div className="flex space-x-4">
+      <div className="flex space-x-3">
         <a
           href="https://facebook.com"
           target="_blank"
           rel="noopener noreferrer"
+          className="text-black  hover:text-[#e1c680] transition-colors"
+        >
+          <IoLogoFacebook className="w-4 h-4" />
+        </a>
+        <a
+          href="https://tiktok.com"
+          target="_blank"
+          rel="noopener noreferrer"
           className="text-black hover:text-[#e1c680] transition-colors"
         >
-          <FaFacebookF />
+          <AiFillTikTok className="w-4 h-4" />
         </a>
         <a
           href="https://instagram.com"
@@ -105,7 +116,7 @@ const Header = () => {
           rel="noopener noreferrer"
           className="text-black hover:text-[#e1c680] transition-colors"
         >
-          <FaInstagram />
+          <ImInstagram className="mt-0.5" />
         </a>
         <a
           href="https://youtube.com"
@@ -113,7 +124,7 @@ const Header = () => {
           rel="noopener noreferrer"
           className="text-black hover:text-[#e1c680] transition-colors"
         >
-          <FaYoutube />
+          <FaYoutube className="w-4 h-4" />
         </a>
       </div>
     </header>
