@@ -1,7 +1,9 @@
 import Post from "../models/Post.js";
 
 export const getPosts = async (req, res) => {
-  const posts = await Post.find().populate("owner", "name");
+  const posts = await Post.find()
+    .populate("owner", "name")
+    .sort({ createdAt: -1 }); // Sắp xếp mới nhất lên đầu
   res.json(posts);
 };
 
@@ -12,7 +14,8 @@ export const getPost = async (req, res) => {
 };
 
 export const createPost = async (req, res) => {
-  const { title, content, excerpt, image } = req.body;
+  const { title, content, excerpt, image, categories, sections, readingTime } =
+    req.body;
   if (req.user.role !== "admin") {
     return res.status(403).json({ message: "Only admins can create posts" });
   }
@@ -21,6 +24,9 @@ export const createPost = async (req, res) => {
     content,
     excerpt,
     image,
+    categories,
+    sections,
+    readingTime,
     owner: req.user._id,
   });
   await post.save();
@@ -38,10 +44,11 @@ export const deletePost = async (req, res) => {
 };
 
 export const updatePost = async (req, res) => {
-  const { title, content, excerpt, image } = req.body;
+  const { title, content, excerpt, image, categories, sections, readingTime } =
+    req.body;
   const post = await Post.findOneAndUpdate(
     { _id: req.params.id, owner: req.user._id },
-    { title, content, excerpt, image },
+    { title, content, excerpt, image, categories, sections, readingTime },
     { new: true }
   );
   if (!post)

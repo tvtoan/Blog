@@ -5,15 +5,6 @@ export const getUser = (req, res) => {
   res.status(401).json({ message: "Not authenticated" });
 };
 
-export const wordpressCallback = (req, res) => {
-  const token = jwt.sign(
-    { id: req.user._id, name: req.user.name, role: req.user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: "1h" }
-  );
-  res.redirect(`http://localhost:3000/auth/callback?token=${token}`);
-};
-
 export const googleCallback = (req, res) => {
   const token = jwt.sign(
     { id: req.user._id, name: req.user.name, role: req.user.role },

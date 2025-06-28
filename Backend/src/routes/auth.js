@@ -2,7 +2,6 @@ import express from "express";
 import passport from "passport";
 import {
   getUser,
-  wordpressCallback,
   googleCallback,
   githubCallback,
   facebookCallback,
@@ -11,17 +10,6 @@ import {
 const router = express.Router();
 
 router.get("/user", getUser);
-
-// WordPress
-router.get(
-  "/wordpress",
-  passport.authenticate("wordpress", { scope: ["profile", "email"] })
-);
-router.get(
-  "/wordpress/callback",
-  passport.authenticate("wordpress", { failureRedirect: "/" }),
-  wordpressCallback
-);
 
 // Google
 router.get(

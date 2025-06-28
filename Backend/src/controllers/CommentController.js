@@ -1,10 +1,9 @@
 import Comment from "../models/Comment.js";
 
 export const getComments = async (req, res) => {
-  const comments = await Comment.find({ postId: req.params.postId }).populate(
-    "user",
-    "name"
-  );
+  const comments = await Comment.find({ postId: req.params.postId })
+    .populate("user", "name")
+    .populate("parentId", "content"); // Populate parent comment nếu có
   res.json(comments);
 };
 
@@ -24,7 +23,7 @@ export const likeComment = async (req, res) => {
   const comment = await Comment.findById(req.params.id);
   if (!comment) return res.status(404).json({ message: "Comment not found" });
   if (!comment.likes.includes(req.user._id)) {
-    comment.likes.push(req.user._id); // Sử dụng mảng để tránh trùng lặp
+    comment.likes.push(req.user._id); // Sử dụng mảng likes
     await comment.save();
   }
   res.json(comment);

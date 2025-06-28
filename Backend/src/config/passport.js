@@ -1,5 +1,4 @@
 import passport from "passport";
-import { Strategy as WordPressStrategy } from "passport-wordpress";
 import GoogleStrategy from "passport-google-oauth20";
 import GitHubStrategy from "passport-github2";
 import FacebookStrategy from "passport-facebook";
@@ -7,31 +6,6 @@ import User from "../models/User.js";
 import dotenv from "dotenv";
 
 dotenv.config();
-
-passport.use(
-  new WordPressStrategy(
-    {
-      clientID: process.env.WORDPRESS_CLIENT_ID,
-      clientSecret: process.env.WORDPRESS_CLIENT_SECRET,
-      callbackURL: "http://localhost:5000/api/auth/wordpress/callback",
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      let user = await User.findOne({
-        providerId: profile.id,
-        provider: "wordpress",
-      });
-      if (!user) {
-        user = await new User({
-          name: profile.displayName,
-          email: profile.emails[0].value,
-          provider: "wordpress",
-          providerId: profile.id,
-        }).save();
-      }
-      return done(null, user);
-    }
-  )
-);
 
 passport.use(
   new GoogleStrategy(
