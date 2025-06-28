@@ -3,6 +3,7 @@
 import React from "react";
 import { postsData } from "../../data";
 import Link from "next/link";
+import { montserrat } from "../../lib/font"; // Assuming you have a montserrat font import
 
 export default function CategoryList() {
   const categories = Array.from(
@@ -15,17 +16,19 @@ export default function CategoryList() {
   }));
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-4">Tất cả thể loại</h1>
+    <div className={`container mx-auto p-4 ${montserrat.className}`}>
+      <h1 className="text-3xl font-medium mb-4">Tất cả thể loại</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {categoryCounts.map((cat) => (
           <Link
             key={cat.name}
             href={`/category/${cat.name.toLowerCase().replace(/\s+/g, "-")}`}
-            className="border p-4 rounded shadow hover:bg-gray-100"
+            className="border border-[#e1c680] p-4 rounded-md shadow-sm hover:bg-[#f9f6f1] hover:text-[#e1c680] transition-all"
           >
-            <h2 className="text-xl font-semibold">{cat.name}</h2>
-            <p className="text-gray-600">{cat.count} bài viết</p>
+            <h2 className="text-lg font-medium text-[#585656] mb-1">
+              {cat.name}
+            </h2>
+            <p className="text-sm text-gray-500">{cat.count} bài viết</p>
           </Link>
         ))}
       </div>

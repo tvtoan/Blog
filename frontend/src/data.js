@@ -9,6 +9,55 @@ export const userData = {
   bio: `Chào mừng bạn đến với blog của mình. Đây là nơi mình thường xuyên chia sẻ về những câu chuyện nho nhỏ trong đời sống thường ngày của mình. Mình tin rằng, hạnh phúc đến từ những điều giản dị nhất. Hi vọng bạn sẽ tìm thấy được sự bình yên và một chút niềm vui nho nhỏ khi đọc blog của mình. ENJOY! ブログへようこそ！あるベトナム人（僕）の毎日の話です！日記だけでなく、人生話、ライフスタイル、そしてミニマリズムについて色々書いています。`,
 };
 
+export const aboutMeData = {
+  _id: "about-001",
+  title: "Hành Trình Của Mình Với Công Nghệ và Cuộc Sống",
+  excerpt:
+    "Chia sẻ cá nhân về hành trình học tập, làm việc và phát triển bản thân từ một sinh viên công nghệ đến một người đam mê viết lách và lập trình giao diện người dùng.",
+  categories: ["Lifestyle", "Self-Help", "Productivity"],
+  image: "/hviet.jpg",
+  sections: [
+    {
+      subtitle: "Bắt Đầu Với Một Chiếc Laptop Cũ",
+      content:
+        "Mình bắt đầu làm quen với lập trình từ năm nhất đại học, khi được tặng lại một chiếc laptop cũ từ anh trai. Máy chậm, pin yếu, nhưng mình vẫn miệt mài học HTML, CSS rồi đến JavaScript. Những dòng code đầu tiên là từ một khóa học YouTube miễn phí. Mỗi lần thấy website hiển thị đúng như mong đợi, mình cảm thấy như vừa khám phá ra một thế giới mới — nơi mà sự sáng tạo được hiện thực hóa qua từng dòng mã.",
+      image:
+        "https://images.unsplash.com/photo-1581092916764-5cba34f46b66?ixlib=rb-4.0.3&q=80&w=3000",
+    },
+    {
+      subtitle: "Tự Học và Những Đêm Trắng",
+      content:
+        "Vì không có điều kiện đi học thêm, mình chọn con đường tự học. Mình dành hàng giờ đọc tài liệu, làm mini project và hỏi đáp trên các cộng đồng lập trình. Có những đêm mình thức đến 2–3 giờ sáng chỉ để tìm lỗi trong một hàm `fetch()` không hoạt động. Mỗi lần sửa được bug, cảm giác chiến thắng như vừa giải một câu đố hóc búa. Việc tự học không chỉ giúp mình thành thạo kỹ thuật mà còn rèn luyện sự kiên trì và độc lập trong tư duy.",
+      image:
+        "https://images.unsplash.com/photo-1516259762381-22954d7d3ad2?ixlib=rb-4.0.3&q=80&w=3000",
+    },
+    {
+      subtitle: "Định Hình Phong Cách Riêng",
+      content:
+        "Khi đã vững về kiến thức nền tảng, mình bắt đầu phát triển gu thẩm mỹ và phong cách thiết kế riêng. Mình học cách sử dụng TailwindCSS, tìm hiểu về UX/UI, và lấy cảm hứng từ những trang blog tối giản như The Hanoi Chamomile. Mình nhận ra rằng giao diện đẹp không nằm ở hiệu ứng cầu kỳ mà ở sự tinh tế và trải nghiệm người dùng. Đó là lý do mình luôn hướng tới các thiết kế nhẹ nhàng, dễ đọc, và tôn trọng không gian trống.",
+      image:
+        "https://images.unsplash.com/photo-1614727146371-d1e9d54dcf71?ixlib=rb-4.0.3&q=80&w=3000",
+    },
+    {
+      subtitle: "Ngoài Lập Trình Là Cuộc Sống",
+      content:
+        "Dù yêu công nghệ, mình vẫn luôn duy trì những thói quen đời thường: đọc sách, chăm mèo, nghe nhạc lo-fi. Những hoạt động này giúp mình lấy lại năng lượng sau những giờ làm việc căng thẳng. Mình tin rằng một lập trình viên tốt cần có cuộc sống cân bằng, không nên bị cuốn quá sâu vào màn hình mà quên mất cảm nhận thế giới xung quanh.",
+      image:
+        "https://images.unsplash.com/photo-1523289333742-be1143f6b766?ixlib=rb-4.0.3&q=80&w=3000",
+    },
+    {
+      subtitle: "Tại Sao Mình Viết Blog?",
+      content:
+        "Mình viết blog không phải để dạy người khác, mà là để hiểu bản thân hơn. Khi mình viết lại một kiến thức đã học, mình buộc phải diễn đạt lại bằng chính ngôn ngữ của mình. Điều đó giúp ghi nhớ sâu hơn và cũng có thể giúp ai đó ngoài kia đang tìm cách bắt đầu giống mình ngày xưa. Nếu bài viết này mang lại cho bạn chút động lực hay cảm hứng, thì đó là phần thưởng lớn nhất đối với mình.",
+      image:
+        "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?ixlib=rb-4.0.3&q=80&w=3000",
+    },
+  ],
+  createdAt: new Date("2024-06-15T00:00:00Z"),
+  readingTime: 8,
+  owner: "507f1f77bcf86cd799439013",
+};
+
 export const commentsData = [
   {
     _id: "cmt1",

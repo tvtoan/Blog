@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { FaYoutube } from "react-icons/fa";
 import { IoLogoFacebook } from "react-icons/io";
@@ -13,22 +14,25 @@ const Header = () => {
   const [isBlogOpen, setIsBlogOpen] = useState(false);
   const closeTimeoutRef = useRef(null);
 
-  // Lấy danh sách categories từ postsData
   const categories = Array.from(
     new Set(postsData.flatMap((post) => post.categories || []))
   );
 
-  // Khi hover vào, mở dropdown và hủy timeout đóng
+  const pathname = usePathname();
+
+  const isActive = (path) => {
+    return pathname === path || (path !== "/" && pathname.startsWith(path));
+  };
+
   const handleMouseEnter = () => {
     clearTimeout(closeTimeoutRef.current);
     setIsBlogOpen(true);
   };
 
-  // Khi rời chuột, chờ 1s rồi mới tắt dropdown
   const handleMouseLeave = () => {
     closeTimeoutRef.current = setTimeout(() => {
       setIsBlogOpen(false);
-    }, 1000);
+    }, 500);
   };
 
   return (
@@ -39,12 +43,15 @@ const Header = () => {
       <nav className="flex items-center space-x-6 relative">
         <Link
           href="/"
-          className="text-[#585656] font-[400] hover:text-[#e1c680] transition-colors"
+          className={`font-[400] transition-colors ${
+            isActive("/")
+              ? "text-[#e1c680]"
+              : "text-[#585656] hover:text-[#e1c680]"
+          }`}
         >
           HOME
         </Link>
 
-        {/* BLOG dropdown */}
         <div
           className="relative"
           onMouseEnter={handleMouseEnter}
@@ -52,41 +59,66 @@ const Header = () => {
         >
           <Link
             href="/category"
-            className="text-[#e1c680] font-[400] hover:text-[#e1c680] transition-colors"
+            className={`font-[400] transition-colors ${
+              isActive("/category")
+                ? "text-[#e1c680]"
+                : "text-[#585656] hover:text-[#e1c680]"
+            }`}
           >
             BLOG <MdKeyboardArrowDown className="inline-block w-5 h-5" />
           </Link>
 
           {isBlogOpen && (
-            <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 shadow-md min-w-[200px] z-50">
+            <div className="absolute top-full -left-[70px] mt-4 text-center bg-white border border-[#e1c680] shadow-md min-w-[200px] z-50 dropdown-menu  before:content-[''] before:absolute before:top-[-8px] before:left-1/2 before:-translate-x-1/2 before:w-[14px] before:h-[14px] before:bg-white before:border-l before:border-t before:border-[#e1c680] before:rotate-45">
               {categories.map((item, index) => (
                 <Link
                   key={index}
                   href={`/category/${item.toLowerCase().replace(/\s+/g, "-")}`}
-                  className="block px-4 py-2 text-[#585656] hover:bg-gray-100 hover:text-[#e1c680] transition-colors"
+                  className="block px-4 py-2 text-[#585656] hover:bg-gray-100 hover:text-[#e1c680] transition-colors relative"
                 >
-                  {item}
+                  <span
+                    className={`relative ${
+                      index !== categories.length - 1
+                        ? "after:content-[''] after:block after:mt-1 after:mx-auto after:w-[80%] after:border-b after:border-[#e1c680] after:transition-all group-hover:after:w-full"
+                        : ""
+                    }`}
+                  >
+                    {item}
+                  </span>
                 </Link>
               ))}
             </div>
           )}
         </div>
-
         <Link
           href="/youtube"
-          className="text-[#585656] font-[400] hover:text-[#e1c680] transition-colors"
+          className={`font-[400] transition-colors ${
+            isActive("/youtube")
+              ? "text-[#e1c680]"
+              : "text-[#585656] hover:text-[#e1c680]"
+          }`}
         >
           YOUTUBE
         </Link>
+
         <Link
           href="/about"
-          className="text-[#585656] font-[400] hover:text-[#e1c680] transition-colors"
+          className={`font-[400] transition-colors ${
+            isActive("/about")
+              ? "text-[#e1c680]"
+              : "text-[#585656] hover:text-[#e1c680]"
+          }`}
         >
           ABOUT ME
         </Link>
+
         <Link
           href="/jp"
-          className="text-[#585656] font-[400] hover:text-[#e1c680] transition-colors"
+          className={`font-[400] transition-colors ${
+            isActive("/jp")
+              ? "text-[#e1c680]"
+              : "text-[#585656] hover:text-[#e1c680]"
+          }`}
         >
           日本語
         </Link>
@@ -98,7 +130,7 @@ const Header = () => {
           href="https://facebook.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-black  hover:text-[#e1c680] transition-colors"
+          className="text-black hover:text-[#e1c680] transition-colors"
         >
           <IoLogoFacebook className="w-4 h-4" />
         </a>
