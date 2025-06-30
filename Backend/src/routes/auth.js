@@ -5,11 +5,12 @@ import {
   googleCallback,
   githubCallback,
   facebookCallback,
-} from "../controllers/authController.js";
+} from "../controllers/AuthController.js";
+import authMiddleware from "../middlewares/auth.js";
 
 const router = express.Router();
 
-router.get("/user", getUser);
+router.get("/user", authMiddleware, getUser); // Thêm authMiddleware
 
 // Google
 router.get(
@@ -18,7 +19,9 @@ router.get(
 );
 router.get(
   "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/" }),
+  passport.authenticate("google", {
+    failureRedirect: "http://localhost:3000/login",
+  }),
   googleCallback
 );
 
@@ -29,7 +32,9 @@ router.get(
 );
 router.get(
   "/github/callback",
-  passport.authenticate("github", { failureRedirect: "/" }),
+  passport.authenticate("github", {
+    failureRedirect: "http://localhost:3000/login",
+  }),
   githubCallback
 );
 
@@ -40,7 +45,9 @@ router.get(
 );
 router.get(
   "/facebook/callback",
-  passport.authenticate("facebook", { failureRedirect: "/" }),
+  passport.authenticate("facebook", {
+    failureRedirect: "http://localhost:3000/login",
+  }),
   facebookCallback
 );
 

@@ -14,21 +14,26 @@ export const getPost = async (req, res) => {
 };
 
 export const createPost = async (req, res) => {
-  const { title, content, excerpt, image, categories, sections, readingTime } =
-    req.body;
+  const { title, excerpt, categories, sections, readingTime } = req.body;
+
   if (req.user.role !== "admin") {
     return res.status(403).json({ message: "Only admins can create posts" });
   }
+
+  const image = req.file ? `/uploads/${req.file.filename}` : null;
+
   const post = new Post({
     title,
-    content,
     excerpt,
     image,
-    categories,
-    sections,
+    categories: categories ? JSON.parse(categories) : [],
+    sections: sections ? JSON.parse(sections) : [],
     readingTime,
     owner: req.user._id,
   });
+  console.log("Creating post:", post);
+  console.log("Uploaded file:", req.file); // Kiểm tra multer có nhận file không
+
   await post.save();
   res.status(201).json(post);
 };
@@ -54,4 +59,17 @@ export const updatePost = async (req, res) => {
   if (!post)
     return res.status(404).json({ message: "Post not found or unauthorized" });
   res.json(post);
+};
+
+export const getPostByTitle = async (title) => {
+  try {
+    const response = await api.get(
+      `/post/search/title/${encodeURIComponent(title)}`
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || "Failed to fetch posts by title"
+    );
+  }
 };
