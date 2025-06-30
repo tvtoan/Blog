@@ -1,35 +1,74 @@
 "use client";
-import React, { useState, use } from "react";
-import { postsData } from "../../../data";
+
+import React, { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import DividerIcon from "@/components/DividerIcon";
 import Image from "next/image";
 import { FaArrowRight } from "react-icons/fa6";
-import { slugifyCategory } from "../../../lib/slugifyCategory"; //  import hàm slugify
+import { slugifyCategory } from "../../../lib/slugifyCategory";
 import { getOriginalCategoryFromSlug } from "@/lib/categoryHelpers";
+import { getPosts } from "@/app/services/postService";
+import { getImageUrl } from "@/lib/getImageUrl";
 
-export default function CategoryPage({ params }) {
-  const { category } = use(params);
-
-  const filteredPosts = postsData.filter((post) =>
-    post.categories?.some(
-      (cat) => slugifyCategory(cat) === category // so sánh slug
-    )
-  );
-
+export default function CategoryPage() {
+  const { category } = useParams();
+  const [filteredPosts, setFilteredPosts] = useState([]);
   const [displayCount, setDisplayCount] = useState(8);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const posts = await getPosts();
+        const matched = posts.filter((post) =>
+          post.categories?.some((cat) => slugifyCategory(cat) === category)
+        );
+        setFilteredPosts(matched);
+      } catch (err) {
+        setError(err.message || "Có lỗi xảy ra khi lấy bài viết.");
+        setFilteredPosts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (category) {
+      fetchPosts();
+    } else {
+      setLoading(false);
+      setError("Danh mục không hợp lệ.");
+    }
+  }, [category]);
 
   const handleLoadMore = () => {
     setDisplayCount((prevCount) => prevCount + 8);
   };
 
   const displayedPosts = filteredPosts.slice(0, displayCount);
-  const originalCategory = getOriginalCategoryFromSlug(category);
+  const originalCategory = category
+    ? getOriginalCategoryFromSlug(category)
+    : "";
+
+  if (loading) {
+    return <div className="container mx-auto p-4 text-center">Đang tải...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-4 text-center text-red-500">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-[40px] text-center mb-14">
-        Category: {originalCategory}
+        Category: {originalCategory || "Không xác định"}
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -54,8 +93,8 @@ export default function CategoryPage({ params }) {
                 <div>Reading time {post.readingTime} minutes.</div>
               </div>
               <Image
-                src={post.image}
-                alt=""
+                src={getImageUrl(post.image)}
+                alt={post.title}
                 width={800}
                 height={600}
                 className="rounded-lg mb-4 w-full h-64 object-cover"

@@ -7,18 +7,29 @@ import { IoLogoFacebook } from "react-icons/io";
 import { ImInstagram } from "react-icons/im";
 import { AiFillTikTok } from "react-icons/ai";
 import { MdKeyboardArrowDown } from "react-icons/md";
-import { postsData } from "../data";
-import { montserrat } from "../lib/font"; // Assuming you have a montserrat font import
+import { montserrat } from "../lib/font";
+import { getPosts } from "@/app/services/postService";
 
 const Header = () => {
   const [isBlogOpen, setIsBlogOpen] = useState(false);
+  const [categories, setCategories] = useState([]);
   const closeTimeoutRef = useRef(null);
-
-  const categories = Array.from(
-    new Set(postsData.flatMap((post) => post.categories || []))
-  );
-
   const pathname = usePathname();
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const posts = await getPosts();
+        const uniqueCategories = Array.from(
+          new Set(posts.flatMap((post) => post.categories || []))
+        );
+        setCategories(uniqueCategories);
+      } catch (error) {
+        console.error("Failed to fetch categories", error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const isActive = (path) => {
     return pathname === path || (path !== "/" && pathname.startsWith(path));
@@ -39,7 +50,6 @@ const Header = () => {
     <header
       className={`bg-[#ececec] px-[100px] py-[18px] flex justify-between items-center font-sans text-[12px] border-b border-gray-200 ${montserrat.className}`}
     >
-      {/* Left menu */}
       <nav className="flex items-center space-x-6 relative">
         <Link
           href="/"
@@ -69,7 +79,7 @@ const Header = () => {
           </Link>
 
           {isBlogOpen && (
-            <div className="absolute top-full -left-[70px] mt-4 text-center bg-white border border-[#e1c680] shadow-md min-w-[200px] z-50 dropdown-menu  before:content-[''] before:absolute before:top-[-8px] before:left-1/2 before:-translate-x-1/2 before:w-[14px] before:h-[14px] before:bg-white before:border-l before:border-t before:border-[#e1c680] before:rotate-45">
+            <div className="absolute top-full -left-[70px] mt-4 text-center bg-white border border-[#e1c680] shadow-md min-w-[200px] z-50 dropdown-menu before:content-[''] before:absolute before:top-[-8px] before:left-1/2 before:-translate-x-1/2 before:w-[14px] before:h-[14px] before:bg-white before:border-l before:border-t before:border-[#e1c680] before:rotate-45">
               {categories.map((item, index) => (
                 <Link
                   key={index}
@@ -90,6 +100,7 @@ const Header = () => {
             </div>
           )}
         </div>
+
         <Link
           href="/youtube"
           className={`font-[400] transition-colors ${
@@ -124,7 +135,6 @@ const Header = () => {
         </Link>
       </nav>
 
-      {/* Right social icons */}
       <div className="flex space-x-3">
         <a
           href="https://facebook.com"

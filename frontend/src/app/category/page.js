@@ -1,25 +1,56 @@
 "use client";
 
-import React from "react";
-import { postsData } from "../../data";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { montserrat } from "../../lib/font"; // Assuming you have a montserrat font import
+import { montserrat } from "../../lib/font";
+import { getPosts } from "@/app/services/postService"; // Import API
 
 export default function CategoryList() {
-  const categories = Array.from(
-    new Set(postsData.flatMap((post) => post.categories || []))
-  );
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const categoryCounts = categories.map((cat) => ({
-    name: cat,
-    count: postsData.filter((post) => post.categories?.includes(cat)).length,
-  }));
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const posts = await getPosts();
+        const uniqueCategories = Array.from(
+          new Set(posts.flatMap((post) => post.categories || []))
+        );
+        const categoryCounts = uniqueCategories.map((cat) => ({
+          name: cat,
+          count: posts.filter((post) => post.categories?.includes(cat)).length,
+        }));
+        setCategories(categoryCounts);
+      } catch (err) {
+        setError(err.message || "Có lỗi xảy ra khi lấy danh mục.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  if (loading) {
+    return <div className="container mx-auto p-4 text-center">Đang tải...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-4 text-center text-red-500">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className={`container mx-auto p-4 ${montserrat.className}`}>
       <h1 className="text-3xl font-medium mb-4">Tất cả thể loại</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {categoryCounts.map((cat) => (
+        {categories.map((cat) => (
           <Link
             key={cat.name}
             href={`/category/${cat.name.toLowerCase().replace(/\s+/g, "-")}`}

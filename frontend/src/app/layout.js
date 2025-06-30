@@ -16,7 +16,7 @@ export default function RootLayout({ children }) {
       <body className="bg-[#f5f5f5] text-[#333] min-h-screen flex flex-col">
         <Header />
         <Title />
-        <div className="flex flex-1 max-w-7xl mx-auto">
+        <div className="flex flex-1 max-w-7xl md:w-7xl mx-auto">
           <main className="flex-1 py-5 px-10 mr-10 bg-white">{children}</main>
           <Sidebar />
         </div>
