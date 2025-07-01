@@ -1,5 +1,13 @@
 import Post from "../models/Post.js";
 
+function removeVietnameseTones(str) {
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // remove accents
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D");
+}
+
 export const getPosts = async (req, res) => {
   const posts = await Post.find()
     .populate("owner", "name")
@@ -61,15 +69,25 @@ export const updatePost = async (req, res) => {
   res.json(post);
 };
 
-export const getPostByTitle = async (title) => {
+export const getPostByTitle = async (req, res) => {
   try {
-    const response = await api.get(
-      `/post/search/title/${encodeURIComponent(title)}`
+    const { title } = req.params;
+    if (!title) {
+      return res.status(400).json({ message: "Title parameter is required." });
+    }
+
+    const posts = await Post.find();
+    const keyword = removeVietnameseTones(title).toLowerCase();
+
+    const filtered = posts.filter((post) =>
+      removeVietnameseTones(post.title).toLowerCase().includes(keyword)
     );
-    return response.data;
-  } catch (error) {
-    throw new Error(
-      error.response?.data?.message || "Failed to fetch posts by title"
-    );
+
+    res.status(200).json(filtered);
+  } catch (err) {
+    console.error("Error fetching posts by title:", err);
+    res
+      .status(500)
+      .json({ message: "Error fetching posts", error: err.message });
   }
 };

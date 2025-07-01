@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema({
   provider: { type: String, required: true },
   providerId: { type: String, required: true, unique: true },
   createdAt: { type: Date, default: Date.now },
+  job: { type: String },
   bio: { type: String },
   role: { type: String, enum: ["user", "admin"], default: "user" },
 });

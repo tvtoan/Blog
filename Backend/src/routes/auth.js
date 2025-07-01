@@ -5,12 +5,14 @@ import {
   googleCallback,
   githubCallback,
   facebookCallback,
+  getAdminInfo,
 } from "../controllers/AuthController.js";
 import authMiddleware from "../middlewares/auth.js";
 
 const router = express.Router();
 
 router.get("/user", authMiddleware, getUser); // Thêm authMiddleware
+router.get("/admin", getAdminInfo);
 
 // Google
 router.get(

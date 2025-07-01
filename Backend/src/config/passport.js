@@ -62,6 +62,7 @@ async function handleOAuthCallback(profile, strategyName, done) {
           profile.photos && profile.photos[0] ? profile.photos[0].value : null,
         provider: strategyName,
         providerId: profile.id,
+        job: "Blogger & Developer",
         role: "user",
         bio: "",
       }).save();
