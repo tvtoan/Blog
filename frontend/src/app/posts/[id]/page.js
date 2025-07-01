@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { getPost, deletePost } from "@/app/services/postService";
+import { getPost } from "@/app/services/postService";
+import { getComments } from "@/app/services/commentService"; // import ở đây
 import { getUser } from "@/app/services/authService";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
@@ -21,9 +22,8 @@ export default function Post() {
   const [post, setPost] = useState(null);
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
+  const [commentCount, setCommentCount] = useState(0);
   const router = useRouter();
-
-  // Unwrap params using React.use()
   const { id } = useParams();
 
   useEffect(() => {
@@ -32,11 +32,15 @@ export default function Post() {
         setError(null);
         const postData = await getPost(id);
         setPost(postData);
+
+        const comments = await getComments(id);
+        const totalCount = countAllComments(comments);
+        setCommentCount(totalCount);
+
         try {
           const userData = await getUser();
           setUser(userData);
-        } catch (err) {
-          // User might not be logged in, but post can still be viewed
+        } catch {
           setUser(null);
         }
       } catch (err) {
@@ -50,6 +54,18 @@ export default function Post() {
       setError("ID không hợp lệ.");
     }
   }, [id]);
+
+  // đếm đệ quy số lượng comment và reply
+  const countAllComments = (comments) => {
+    let count = 0;
+    comments.forEach((comment) => {
+      count += 1;
+      if (comment.replies && comment.replies.length > 0) {
+        count += countAllComments(comment.replies);
+      }
+    });
+    return count;
+  };
 
   const handleShare = () => {
     const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
@@ -69,12 +85,6 @@ export default function Post() {
   if (!post) {
     return <div className="container mx-auto p-4 text-center">Đang tải...</div>;
   }
-
-  const isAuthor =
-    user &&
-    post.owner &&
-    user._id === post.owner._id.toString() &&
-    user.role === "admin";
 
   return (
     <div className={`container mx-auto mb-10 p-4 ${montserrat.className}`}>
@@ -104,7 +114,7 @@ export default function Post() {
         </div>
         <div>
           <FaComments className="inline mr-1 text-[#7687a5]" />
-          {post.commentCount || 0} Comments
+          {commentCount} Comments
         </div>
       </div>
       {post.image && (

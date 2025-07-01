@@ -23,6 +23,22 @@ export const getUser = async () => {
   }
 };
 
+export const getAdminInfo = async () => {
+  try {
+    const response = await api.get("/auth/admin");
+    console.log("Get admin info response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Get admin info error:",
+      error.response?.data || error.message
+    );
+    throw new Error(
+      error.response?.data?.message || "Failed to fetch admin info"
+    );
+  }
+};
+
 export const handleCallback = (token) => {
   console.log("Handling callback with token:", token);
   setAuthToken(token);

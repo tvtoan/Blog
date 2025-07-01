@@ -2,7 +2,7 @@ import api from "./api";
 
 export const getComments = async (postId) => {
   try {
-    const response = await api.get(`/comment?postId=${postId}`);
+    const response = await api.get(`/comment/${postId}`);
     return response.data;
   } catch (error) {
     throw new Error(
@@ -22,9 +22,20 @@ export const createComment = async (commentData) => {
 
 export const likeComment = async (id) => {
   try {
-    const response = await api.post(`/comment/${id}/like`);
+    const response = await api.put(`/comment/${id}/like`);
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || "Failed to like comment");
+  }
+};
+
+export const unLikeComment = async (id) => {
+  try {
+    const response = await api.put(`/comment/${id}/unlike`);
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || "Failed to unlike comment"
+    );
   }
 };

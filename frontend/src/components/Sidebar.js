@@ -1,24 +1,26 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { FaArrowRight } from "react-icons/fa6";
 import Link from "next/link";
 import { montserrat } from "../lib/font";
 import { slugifyCategory } from "../lib/slugifyCategory";
-import { getPostByTitle, getPosts } from "@/app/services/postService";
+import { getPosts } from "@/app/services/postService";
+import { getAdminInfo } from "@/app/services/authService";
+import { useRouter } from "next/navigation";
 
 const Sidebar = () => {
   const [isFocused, setIsFocused] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const searchContainerRef = useRef(null);
 
   const [categories, setCategories] = useState({});
   const [archives, setArchives] = useState({});
+  const [admin, setAdmin] = useState(null); // ⬅️ admin info
+  const [loadingAdmin, setLoadingAdmin] = useState(true); // ⬅️ trạng thái loading
+  const router = useRouter();
 
-  // Handle click outside to close search results
+  // Click outside search input
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -28,37 +30,11 @@ const Sidebar = () => {
         setIsFocused(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Search logic
-  useEffect(() => {
-    const fetchSearchResults = async () => {
-      if (searchQuery.trim() === "") {
-        setSearchResults([]);
-        return;
-      }
-
-      setLoading(true);
-      setError(null);
-      try {
-        const results = await getPostByTitle(searchQuery);
-        setSearchResults(results || []);
-      } catch (err) {
-        setError(err.message || "Có lỗi xảy ra khi tìm kiếm.");
-        setSearchResults([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const timeoutId = setTimeout(fetchSearchResults, 300); // debounce
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
-
-  // Fetch posts and compute categories & archives
+  // Fetch post để tính category và archive
   useEffect(() => {
     const fetchPostData = async () => {
       try {
@@ -68,12 +44,10 @@ const Sidebar = () => {
         const archiveMap = {};
 
         posts.forEach((post) => {
-          // Tính categories
           (post.categories || []).forEach((cat) => {
             categoryMap[cat] = (categoryMap[cat] || 0) + 1;
           });
 
-          // Tính archives theo MM/YYYY
           const date = new Date(post.createdAt);
           const key = `${String(date.getMonth() + 1).padStart(
             2,
@@ -92,11 +66,37 @@ const Sidebar = () => {
     fetchPostData();
   }, []);
 
+  // Fetch admin info
+  useEffect(() => {
+    const fetchAdmin = async () => {
+      try {
+        const data = await getAdminInfo();
+        setAdmin(data);
+      } catch (error) {
+        console.error("Lỗi khi lấy thông tin admin:", error);
+      } finally {
+        setLoadingAdmin(false);
+      }
+    };
+
+    fetchAdmin();
+  }, []);
+
+  // Xử lý submit search
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim() !== "") {
+      router.push(`/search?query=${encodeURIComponent(searchQuery)}`);
+      setSearchQuery("");
+      setIsFocused(false);
+    }
+  };
+
   return (
     <aside className={`w-[300px] p-5 bg-white ${montserrat.className}`}>
       {/* SEARCH */}
       <div ref={searchContainerRef} className="mb-5 relative">
-        <div className="relative flex">
+        <form onSubmit={handleSearchSubmit} className="relative flex">
           <input
             type="text"
             value={searchQuery}
@@ -106,7 +106,7 @@ const Sidebar = () => {
             onFocus={() => setIsFocused(true)}
           />
           <button
-            type="button"
+            type="submit"
             className={`h-10 flex items-center justify-end overflow-hidden transition-all duration-500 ease-in-out origin-left group ${
               isFocused
                 ? "w-[60px] bg-[#cfac1e] text-white"
@@ -128,32 +128,7 @@ const Sidebar = () => {
               }`}
             />
           </button>
-        </div>
-
-        {isFocused && (
-          <div className="absolute z-10 w-full bg-white border border-gray-300 mt-1 rounded shadow-lg max-h-60 overflow-y-auto">
-            {loading && <div className="p-2 text-center">Đang tải...</div>}
-            {error && <div className="p-2 text-red-500">{error}</div>}
-            {searchResults.length > 0
-              ? searchResults.map((post) => (
-                  <Link
-                    key={post._id}
-                    href={`/posts/${post._id}`}
-                    className="block p-2 hover:bg-gray-100"
-                    onClick={() => setIsFocused(false)}
-                  >
-                    {post.title}
-                  </Link>
-                ))
-              : !loading &&
-                !error &&
-                searchQuery.trim() !== "" && (
-                  <div className="p-2 text-center text-gray-500">
-                    Không tìm thấy bài viết.
-                  </div>
-                )}
-          </div>
-        )}
+        </form>
       </div>
 
       {/* ABOUT ME */}
@@ -164,19 +139,24 @@ const Sidebar = () => {
           </h2>
           <div className="absolute left-1/2 -bottom-2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-[#eeeeee]" />
         </div>
-      </div>
-      <div className="text-left">
-        <img
-          src="/cv.jpg"
-          alt="Profile"
-          className="w-full h-full object-cover mx-auto"
-        />
-        <p className="my-4 font-[600]">Blogger & Youtuber</p>
-        <p className="text-sm">
-          Hi, Mình là Nam Anh. Chào mừng bạn đến với blog của mình. Ngày nào
-          mình cũng thử nghiệm những cách sống tối giản và chia sẻ lại kinh
-          nghiệm đó với bạn.
-        </p>
+
+        {loadingAdmin ? (
+          <div className="text-center text-gray-500 text-sm">Đang tải...</div>
+        ) : admin ? (
+          <div className="text-left">
+            <img
+              src={admin.avatar || "/default-avatar.jpg"}
+              alt={admin.name}
+              className="w-full h-auto object-cover mx-auto"
+            />
+            <p className="my-4 font-[600]">{admin.job || "Blogger"}</p>
+            <p className="text-sm">{admin.bio || "Chưa có mô tả."}</p>
+          </div>
+        ) : (
+          <div className="text-sm text-gray-500 text-center">
+            Không có thông tin admin.
+          </div>
+        )}
       </div>
 
       {/* ARCHIVES */}
