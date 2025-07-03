@@ -35,10 +35,8 @@ export default function CommentSection({ post }) {
           roots.push(comment);
         }
       });
-      console.log(JSON.stringify(roots, null, 2));
 
       setComments(roots);
-      console.log(comments);
     } catch (err) {
       console.error(err.message);
     } finally {
@@ -65,7 +63,7 @@ export default function CommentSection({ post }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!user) {
-      router.push("/login");
+      router.push("/auth/login");
       return;
     }
     if (!newComment.trim()) return;
@@ -97,6 +95,12 @@ export default function CommentSection({ post }) {
   };
 
   const totalComments = useMemo(() => countAllComments(comments), [comments]);
+
+  const handleTextareaClick = () => {
+    if (!user) {
+      router.push("/auth/login");
+    }
+  };
 
   return (
     <div className={`container mx-auto p-4 w-full ${montserrat.className}`}>
@@ -139,18 +143,18 @@ export default function CommentSection({ post }) {
             <textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
+              onClick={handleTextareaClick} // Điều hướng khi click
               className="w-full p-6 rounded-t resize-none h-[150px] focus:outline-none text-sm text-black placeholder:text-gray-500"
               placeholder={
                 user ? "Write a comment..." : "Bạn cần đăng nhập để bình luận"
               }
-              disabled={!user}
+              // KHÔNG disable textarea nữa để onClick vẫn hoạt động
             />
 
             <div className="flex justify-end border-t border-gray-300 px-4 py-3">
               <button
                 type="submit"
-                disabled={!user}
-                className="text-xs text-gray-500 border border-gray-300 px-4 py-2 rounded hover:bg-gray-100 transition disabled:opacity-50"
+                className="text-xs text-gray-500 border border-gray-300 px-4 py-2 rounded hover:bg-gray-100 transition"
               >
                 Comment
               </button>

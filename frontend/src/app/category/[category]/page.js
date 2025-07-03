@@ -93,7 +93,7 @@ export default function CategoryPage() {
                 <div>Reading time {post.readingTime} minutes.</div>
               </div>
               <Image
-                src={getImageUrl(post.image)}
+                src={post.image}
                 alt={post.title}
                 width={800}
                 height={600}

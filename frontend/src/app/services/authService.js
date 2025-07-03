@@ -23,6 +23,27 @@ export const getUser = async () => {
   }
 };
 
+export const getUsers = async () => {
+  try {
+    const response = await api.get("/auth/users");
+    console.log("Get users response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Get users error:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || "Failed to fetch users");
+  }
+};
+
+export const updateAdmin = async (adminData) => {
+  try {
+    const response = await api.put("/auth/admin", adminData);
+    console.log("Update admin response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Update admin error:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || "Failed to update admin");
+  }
+};
 export const getAdminInfo = async () => {
   try {
     const response = await api.get("/auth/admin");

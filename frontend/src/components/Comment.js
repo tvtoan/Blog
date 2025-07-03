@@ -94,7 +94,9 @@ export default function Comment({
               className={`flex items-center gap-1 ${
                 localUser ? "cursor-pointer" : "cursor-not-allowed"
               } group`}
-              onClick={localUser ? handleLike : () => router.push("/login")}
+              onClick={
+                localUser ? handleLike : () => router.push("/auth/login")
+              }
             >
               <FaStar
                 className={`text-blue-400 mb-1 w-4 h-4 ${

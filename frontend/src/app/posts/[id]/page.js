@@ -119,7 +119,7 @@ export default function Post() {
       </div>
       {post.image && (
         <Image
-          src={getImageUrl(post.image)}
+          src={post.image}
           alt={post.title}
           width={750}
           height={420}
