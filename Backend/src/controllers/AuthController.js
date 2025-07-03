@@ -22,6 +22,46 @@ export const getAdminInfo = async (req, res) => {
   }
 };
 
+export const updateAdmin = async (req, res) => {
+  const userId = req.user?.id;
+  const { name, bio, job, avatar } = req.body;
+
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const admin = await User.findById(userId);
+
+    if (!admin || admin.role !== "admin") {
+      return res.status(403).json({ message: "Access denied. Not an admin." });
+    }
+
+    if (name !== undefined) admin.name = name;
+    if (bio !== undefined) admin.bio = bio;
+    if (job !== undefined) admin.job = job;
+    if (avatar !== undefined) admin.avatar = avatar;
+
+    const updatedAdmin = await admin.save();
+
+    res.json({
+      message: "Admin profile updated successfully",
+      admin: {
+        id: updatedAdmin._id,
+        name: updatedAdmin.name,
+        bio: updatedAdmin.bio,
+        job: updatedAdmin.job,
+        avatar: updatedAdmin.avatar,
+        email: updatedAdmin.email,
+        role: updatedAdmin.role,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating admin:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 export const googleCallback = (req, res) => {
   console.log("Google callback user:", req.user); // Debug
   if (!req.user) {
@@ -59,4 +99,23 @@ export const facebookCallback = (req, res) => {
     { expiresIn: "8h" }
   );
   res.redirect(`http://localhost:3000/auth/callback?token=${token}`);
+};
+
+export const getUsers = async (req, res) => {
+  const currentUser = req.user;
+
+  if (!currentUser || currentUser.role !== "admin") {
+    return res.status(403).json({ message: "Access denied" });
+  }
+
+  try {
+    const users = await User.find()
+      .select("name email role avatar bio job createdAt")
+      .sort({ createdAt: -1 });
+
+    res.json(users);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
 };

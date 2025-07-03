@@ -9,6 +9,7 @@ import connectDB from "./config/db.js";
 import postRoutes from "./routes/post.js";
 import commentRoutes from "./routes/comment.js";
 import authRoutes from "./routes/auth.js";
+import aboutMeRoutes from "./routes/aboutme.js";
 
 dotenv.config();
 const app = express();
@@ -54,6 +55,7 @@ app.use("/uploads", express.static(uploadPath));
 app.use("/api/post", postRoutes);
 app.use("/api/comment", commentRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/about", aboutMeRoutes);
 
 // Khởi động server
 const PORT = process.env.PORT || 5000;

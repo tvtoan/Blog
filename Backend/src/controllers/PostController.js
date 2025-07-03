@@ -21,31 +21,6 @@ export const getPost = async (req, res) => {
   res.json(post);
 };
 
-export const createPost = async (req, res) => {
-  const { title, excerpt, categories, sections, readingTime } = req.body;
-
-  if (req.user.role !== "admin") {
-    return res.status(403).json({ message: "Only admins can create posts" });
-  }
-
-  const image = req.file ? `/uploads/${req.file.filename}` : null;
-
-  const post = new Post({
-    title,
-    excerpt,
-    image,
-    categories: categories ? JSON.parse(categories) : [],
-    sections: sections ? JSON.parse(sections) : [],
-    readingTime,
-    owner: req.user._id,
-  });
-  console.log("Creating post:", post);
-  console.log("Uploaded file:", req.file); // Kiểm tra multer có nhận file không
-
-  await post.save();
-  res.status(201).json(post);
-};
-
 export const deletePost = async (req, res) => {
   const post = await Post.findOneAndDelete({
     _id: req.params.id,
@@ -56,17 +31,56 @@ export const deletePost = async (req, res) => {
   res.json({ message: "Post deleted" });
 };
 
+export const createPost = async (req, res) => {
+  const { title, excerpt, image, categories, sections, readingTime } = req.body;
+
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ message: "Only admins can create posts" });
+  }
+
+  const post = new Post({
+    title,
+    excerpt,
+    image,
+    categories: Array.isArray(categories) ? categories : [],
+    sections: Array.isArray(sections) ? sections : [],
+    readingTime,
+    owner: req.user._id,
+  });
+
+  await post.save();
+  res.status(201).json(post);
+};
+
 export const updatePost = async (req, res) => {
+  const { id } = req.params;
   const { title, content, excerpt, image, categories, sections, readingTime } =
     req.body;
-  const post = await Post.findOneAndUpdate(
-    { _id: req.params.id, owner: req.user._id },
-    { title, content, excerpt, image, categories, sections, readingTime },
-    { new: true }
-  );
-  if (!post)
-    return res.status(404).json({ message: "Post not found or unauthorized" });
-  res.json(post);
+
+  try {
+    const updatedPost = await Post.findByIdAndUpdate(
+      id,
+      {
+        title,
+        content,
+        excerpt,
+        image,
+        categories: Array.isArray(categories) ? categories : [],
+        sections: Array.isArray(sections) ? sections : [],
+        readingTime,
+      },
+      { new: true }
+    );
+
+    if (!updatedPost) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    res.json(updatedPost);
+  } catch (err) {
+    console.error("Error updating post:", err);
+    res.status(500).json({ message: err.message });
+  }
 };
 
 export const getPostByTitle = async (req, res) => {
