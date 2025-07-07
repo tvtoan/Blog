@@ -8,13 +8,20 @@ export default function EditPostPage() {
   const { id } = useParams();
   const router = useRouter();
   const [form, setForm] = useState({
-    title: "",
-    excerpt: "",
+    title: { vi: "", jp: "" },
+    excerpt: { vi: "", jp: "" },
     image: "",
     categories: [],
     readingTime: 0,
-    sections: [{ subtitle: "", content: "", image: "" }],
+    sections: [
+      {
+        subtitle: { vi: "", jp: "" },
+        content: { vi: "", jp: "" },
+        image: "",
+      },
+    ],
   });
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -25,13 +32,24 @@ export default function EditPostPage() {
 
         // Fallback nếu thiếu sections
         if (!data.sections || data.sections.length === 0) {
-          data.sections = [{ subtitle: "", content: "", image: "" }];
+          data.sections = [
+            {
+              subtitle: { vi: "", jp: "" },
+              content: { vi: "", jp: "" },
+              image: "",
+            },
+          ];
+        } else {
+          data.sections = data.sections.map((s) => ({
+            subtitle: s.subtitle || { vi: "", jp: "" },
+            content: s.content || { vi: "", jp: "" },
+            image: s.image || "",
+          }));
         }
 
-        // Fallback nếu thiếu các field khác
         setForm({
-          title: data.title || "",
-          excerpt: data.excerpt || "",
+          title: data.title || { vi: "", jp: "" },
+          excerpt: data.excerpt || { vi: "", jp: "" },
           image: data.image || "",
           categories: data.categories || [],
           readingTime: data.readingTime || 0,
@@ -48,20 +66,41 @@ export default function EditPostPage() {
     fetchPost();
   }, [id]);
 
+  const handleFieldChange = (field, lang, value) => {
+    setForm((prev) => ({
+      ...prev,
+      [field]: {
+        ...prev[field],
+        [lang]: value,
+      },
+    }));
+  };
+
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSectionChange = (index, field, value) => {
+  const handleSectionChange = (index, field, lang, value) => {
     const updated = [...form.sections];
-    updated[index][field] = value;
+    if (field === "subtitle" || field === "content") {
+      updated[index][field][lang] = value;
+    } else {
+      updated[index][field] = value;
+    }
     setForm((prev) => ({ ...prev, sections: updated }));
   };
 
   const handleAddSection = () => {
     setForm((prev) => ({
       ...prev,
-      sections: [...prev.sections, { subtitle: "", content: "", image: "" }],
+      sections: [
+        ...prev.sections,
+        {
+          subtitle: { vi: "", jp: "" },
+          content: { vi: "", jp: "" },
+          image: "",
+        },
+      ],
     }));
   };
 
@@ -87,18 +126,35 @@ export default function EditPostPage() {
       </h1>
 
       <div className="space-y-5">
+        {/* Tiêu đề */}
         <input
           className="border p-3 rounded w-full"
-          value={form.title}
-          onChange={(e) => handleChange("title", e.target.value)}
-          placeholder="Tiêu đề"
+          value={form.title.vi}
+          onChange={(e) => handleFieldChange("title", "vi", e.target.value)}
+          placeholder="Tiêu đề (Tiếng Việt)"
+        />
+        <input
+          className="border p-3 rounded w-full"
+          value={form.title.jp}
+          onChange={(e) => handleFieldChange("title", "jp", e.target.value)}
+          placeholder="Tiêu đề (Tiếng Nhật)"
+        />
+
+        {/* Excerpt */}
+        <textarea
+          className="border p-3 rounded w-full"
+          value={form.excerpt.vi}
+          onChange={(e) => handleFieldChange("excerpt", "vi", e.target.value)}
+          placeholder="Tóm tắt (Tiếng Việt)"
         />
         <textarea
           className="border p-3 rounded w-full"
-          value={form.excerpt}
-          onChange={(e) => handleChange("excerpt", e.target.value)}
-          placeholder="Tóm tắt"
+          value={form.excerpt.jp}
+          onChange={(e) => handleFieldChange("excerpt", "jp", e.target.value)}
+          placeholder="Tóm tắt (Tiếng Nhật)"
         />
+
+        {/* Ảnh & Categories */}
         <input
           className="border p-3 rounded w-full"
           value={form.image}
@@ -124,6 +180,7 @@ export default function EditPostPage() {
           placeholder="Thời gian đọc (phút)"
         />
 
+        {/* Sections */}
         <div className="space-y-6">
           <h2 className="text-lg font-semibold">📚 Nội dung từng phần</h2>
           {form.sections.map((sec, index) => (
@@ -131,29 +188,51 @@ export default function EditPostPage() {
               key={index}
               className="p-4 bg-gray-50 border border-gray-300 rounded space-y-2"
             >
+              {/* Subtitle */}
               <input
                 className="border p-2 rounded w-full"
-                value={sec.subtitle}
-                placeholder="Tiêu đề nhỏ"
+                value={sec.subtitle.vi}
+                placeholder="Tiêu đề nhỏ (Việt)"
                 onChange={(e) =>
-                  handleSectionChange(index, "subtitle", e.target.value)
+                  handleSectionChange(index, "subtitle", "vi", e.target.value)
+                }
+              />
+              <input
+                className="border p-2 rounded w-full"
+                value={sec.subtitle.jp}
+                placeholder="Tiêu đề nhỏ (Nhật)"
+                onChange={(e) =>
+                  handleSectionChange(index, "subtitle", "jp", e.target.value)
+                }
+              />
+
+              {/* Content */}
+              <textarea
+                className="border p-2 rounded w-full"
+                value={sec.content.vi}
+                rows={3}
+                placeholder="Nội dung (Việt)"
+                onChange={(e) =>
+                  handleSectionChange(index, "content", "vi", e.target.value)
                 }
               />
               <textarea
                 className="border p-2 rounded w-full"
-                value={sec.content}
+                value={sec.content.jp}
                 rows={3}
-                placeholder="Nội dung"
+                placeholder="Nội dung (Nhật)"
                 onChange={(e) =>
-                  handleSectionChange(index, "content", e.target.value)
+                  handleSectionChange(index, "content", "jp", e.target.value)
                 }
               />
+
+              {/* Image */}
               <input
                 className="border p-2 rounded w-full"
                 value={sec.image}
                 placeholder="URL ảnh"
                 onChange={(e) =>
-                  handleSectionChange(index, "image", e.target.value)
+                  handleSectionChange(index, "image", null, e.target.value)
                 }
               />
             </div>

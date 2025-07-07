@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createPost, deletePost, getPosts } from "@/app/services/postService";
 import { getComments } from "@/app/services/commentService";
@@ -9,11 +9,19 @@ export default function AdminPostPage() {
   const router = useRouter();
   const [posts, setPosts] = useState([]);
   const [commentCounts, setCommentCounts] = useState({});
+  const [language, setLanguage] = useState("vi"); // Ngôn ngữ chọn hiển thị
+
   const [newPost, setNewPost] = useState({
-    title: "",
-    excerpt: "",
+    title: { vi: "", jp: "" },
+    excerpt: { vi: "", jp: "" },
     categories: "",
-    sections: [],
+    sections: [
+      {
+        subtitle: { vi: "", jp: "" },
+        content: { vi: "", jp: "" },
+        image: "",
+      },
+    ],
     readingTime: 1,
     image: "",
   });
@@ -47,20 +55,13 @@ export default function AdminPostPage() {
   const buildCommentTree = (rawComments) => {
     const map = new Map();
     const roots = [];
-
-    rawComments.forEach((c) => {
-      map.set(c._id, { ...c, replies: [] });
-    });
-
+    rawComments.forEach((c) => map.set(c._id, { ...c, replies: [] }));
     map.forEach((comment) => {
       if (comment.parentId) {
         const parent = map.get(comment.parentId);
         if (parent) parent.replies.push(comment);
-      } else {
-        roots.push(comment);
-      }
+      } else roots.push(comment);
     });
-
     return roots;
   };
 
@@ -80,15 +81,26 @@ export default function AdminPostPage() {
   }, []);
 
   const handleAddSection = () => {
-    setNewPost({
-      ...newPost,
-      sections: [...newPost.sections, { subtitle: "", content: "", image: "" }],
-    });
+    setNewPost((prev) => ({
+      ...prev,
+      sections: [
+        ...prev.sections,
+        {
+          subtitle: { vi: "", jp: "" },
+          content: { vi: "", jp: "" },
+          image: "",
+        },
+      ],
+    }));
   };
 
-  const handleSectionChange = (index, field, value) => {
+  const handleSectionChange = (index, field, lang, value) => {
     const updated = [...newPost.sections];
-    updated[index][field] = value;
+    if (field === "subtitle" || field === "content") {
+      updated[index][field][lang] = value;
+    } else {
+      updated[index][field] = value;
+    }
     setNewPost({ ...newPost, sections: updated });
   };
 
@@ -106,10 +118,16 @@ export default function AdminPostPage() {
       await createPost(payload);
 
       setNewPost({
-        title: "",
-        excerpt: "",
+        title: { vi: "", jp: "" },
+        excerpt: { vi: "", jp: "" },
         categories: "",
-        sections: [],
+        sections: [
+          {
+            subtitle: { vi: "", jp: "" },
+            content: { vi: "", jp: "" },
+            image: "",
+          },
+        ],
         readingTime: 1,
         image: "",
       });
@@ -129,11 +147,45 @@ export default function AdminPostPage() {
     }
   };
 
+  const handleTitleChange = (lang, value) => {
+    setNewPost((prev) => ({
+      ...prev,
+      title: { ...prev.title, [lang]: value },
+    }));
+  };
+
+  const handleExcerptChange = (lang, value) => {
+    setNewPost((prev) => ({
+      ...prev,
+      excerpt: { ...prev.excerpt, [lang]: value },
+    }));
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">
       <h1 className="text-3xl font-bold text-[#cfac1e] mb-10">
         🛠️ Quản lý bài viết
       </h1>
+
+      {/* Language Switch */}
+      <div className="flex justify-end mb-6 space-x-4">
+        <button
+          onClick={() => setLanguage("vi")}
+          className={`px-4 py-2 rounded ${
+            language === "vi" ? "bg-[#cfac1e] text-white" : "bg-gray-200"
+          }`}
+        >
+          🇻🇳 Tiếng Việt
+        </button>
+        <button
+          onClick={() => setLanguage("jp")}
+          className={`px-4 py-2 rounded ${
+            language === "jp" ? "bg-[#cfac1e] text-white" : "bg-gray-200"
+          }`}
+        >
+          🇯🇵 日本語
+        </button>
+      </div>
 
       <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm mb-12">
         <form
@@ -146,32 +198,30 @@ export default function AdminPostPage() {
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="block mb-1 font-semibold">
-                Tiêu đề bài viết
+                Tiêu đề ({language === "vi" ? "Tiếng Việt" : "Tiếng Nhật"})
               </label>
               <input
                 className="border p-3 rounded w-full"
-                value={newPost.title}
-                onChange={(e) =>
-                  setNewPost({ ...newPost, title: e.target.value })
-                }
+                value={newPost.title[language]}
+                onChange={(e) => handleTitleChange(language, e.target.value)}
                 required
               />
             </div>
 
             <div>
-              <label className="block mb-1 font-semibold">Tóm tắt</label>
+              <label className="block mb-1 font-semibold">
+                Tóm tắt ({language === "vi" ? "Tiếng Việt" : "Tiếng Nhật"})
+              </label>
               <input
                 className="border p-3 rounded w-full"
-                value={newPost.excerpt}
-                onChange={(e) =>
-                  setNewPost({ ...newPost, excerpt: e.target.value })
-                }
+                value={newPost.excerpt[language]}
+                onChange={(e) => handleExcerptChange(language, e.target.value)}
               />
             </div>
 
             <div>
               <label className="block mb-1 font-semibold">
-                Thể loại (ngăn cách bằng dấu phẩy)
+                Thể loại (dấu phẩy)
               </label>
               <input
                 className="border p-3 rounded w-full"
@@ -183,9 +233,7 @@ export default function AdminPostPage() {
             </div>
 
             <div>
-              <label className="block mb-1 font-semibold">
-                Thời gian đọc (phút)
-              </label>
+              <label className="block mb-1 font-semibold">Thời gian đọc</label>
               <input
                 className="border p-3 rounded w-full"
                 type="number"
@@ -228,38 +276,48 @@ export default function AdminPostPage() {
               >
                 <div>
                   <label className="block mb-1 font-semibold">
-                    Tiêu đề nhỏ
+                    Tiêu đề nhỏ ({language})
                   </label>
                   <input
                     className="border p-2 mb-2 w-full rounded"
-                    value={section.subtitle}
+                    value={section.subtitle[language]}
                     onChange={(e) =>
-                      handleSectionChange(index, "subtitle", e.target.value)
-                    }
-                  />
-                </div>
-
-                <div>
-                  <label className="block mb-1 font-semibold">Nội dung</label>
-                  <textarea
-                    className="border p-2 mb-2 w-full rounded"
-                    rows={3}
-                    value={section.content}
-                    onChange={(e) =>
-                      handleSectionChange(index, "content", e.target.value)
+                      handleSectionChange(
+                        index,
+                        "subtitle",
+                        language,
+                        e.target.value
+                      )
                     }
                   />
                 </div>
 
                 <div>
                   <label className="block mb-1 font-semibold">
-                    URL ảnh (tùy chọn)
+                    Nội dung ({language})
                   </label>
+                  <textarea
+                    className="border p-2 mb-2 w-full rounded"
+                    rows={3}
+                    value={section.content[language]}
+                    onChange={(e) =>
+                      handleSectionChange(
+                        index,
+                        "content",
+                        language,
+                        e.target.value
+                      )
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-1 font-semibold">URL ảnh</label>
                   <input
                     className="border p-2 w-full rounded"
                     value={section.image}
                     onChange={(e) =>
-                      handleSectionChange(index, "image", e.target.value)
+                      handleSectionChange(index, "image", null, e.target.value)
                     }
                   />
                 </div>
@@ -304,12 +362,20 @@ export default function AdminPostPage() {
               onClick={() => router.push(`/post/${post._id}`)}
             >
               <h3 className="text-lg font-semibold text-[#222] hover:text-[#cfac1e]">
-                {post.title}
+                Tiêu đề:{" "}
+                {typeof post.title === "object"
+                  ? post.title[language]
+                  : post.title}
               </h3>
-              <p className="text-sm text-gray-600">{post.excerpt}</p>
-              <p className="text-xs text-gray-500">
-                📝 {commentCounts[post._id] ?? 0} bình luận | ⏱️{" "}
-                {post.readingTime} phút đọc
+              <p className="text-sm text-gray-600 mt-1">
+                Tóm tắt:{" "}
+                {typeof post.excerpt === "object"
+                  ? post.excerpt[language]
+                  : post.excerpt}
+              </p>
+              <p className="text-xs text-gray-500 mt-2">
+                {commentCounts[post._id] ?? 0} bình luận | {post.readingTime}{" "}
+                phút đọc
               </p>
             </div>
 

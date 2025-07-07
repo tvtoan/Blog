@@ -3,12 +3,13 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { montserrat } from "../../lib/font";
-import { getPosts } from "@/app/services/postService"; // Import API
+import { getPosts } from "@/app/services/postService";
 
 export default function CategoryList() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [language, setLanguage] = useState("vi"); // ✅ Ngôn ngữ: vi | jp
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -48,7 +49,30 @@ export default function CategoryList() {
 
   return (
     <div className={`container mx-auto p-4 ${montserrat.className}`}>
-      <h1 className="text-3xl font-medium mb-4">Tất cả thể loại</h1>
+      {/* Nút chọn ngôn ngữ */}
+      <div className="flex justify-end mb-6 space-x-4">
+        <button
+          onClick={() => setLanguage("vi")}
+          className={`px-4 py-2 rounded ${
+            language === "vi" ? "bg-[#cfac1e] text-white" : "bg-gray-200"
+          }`}
+        >
+          🇻🇳 Tiếng Việt
+        </button>
+        <button
+          onClick={() => setLanguage("jp")}
+          className={`px-4 py-2 rounded ${
+            language === "jp" ? "bg-[#cfac1e] text-white" : "bg-gray-200"
+          }`}
+        >
+          🇯🇵 日本語
+        </button>
+      </div>
+
+      <h1 className="text-3xl font-medium mb-4">
+        {language === "vi" ? "Tất cả thể loại" : "すべてのカテゴリー"}
+      </h1>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {categories.map((cat) => (
           <Link
@@ -59,7 +83,11 @@ export default function CategoryList() {
             <h2 className="text-lg font-medium text-[#585656] mb-1">
               {cat.name}
             </h2>
-            <p className="text-sm text-gray-500">{cat.count} bài viết</p>
+            <p className="text-sm text-gray-500">
+              {language === "vi"
+                ? `${cat.count} bài viết`
+                : `${cat.count} 記事`}
+            </p>
           </Link>
         ))}
       </div>

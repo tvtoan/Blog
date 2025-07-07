@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { getPost } from "@/app/services/postService";
-import { getComments } from "@/app/services/commentService"; // import ở đây
+import { getComments } from "@/app/services/commentService";
 import { getUser } from "@/app/services/authService";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
@@ -16,9 +16,11 @@ import DividerIcon from "@/components/DividerIcon";
 import Image from "next/image";
 import CommentSection from "@/components/CommentSection";
 import { montserrat } from "../../../lib/font";
-import { getImageUrl } from "@/lib/getImageUrl";
-
+import { getLocalizedText } from "@/lib/getLocalizedText"; // ✅ Hàm lấy văn bản theo ngôn ngữ
+import { useLanguage } from "@/app/context/LanguageContext";
+// ✅ Import context để lấy ngôn ngữ
 export default function Post() {
+  const { language } = useLanguage(); // ✅ Lấy ngôn ngữ từ context
   const [post, setPost] = useState(null);
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
@@ -37,12 +39,8 @@ export default function Post() {
         const totalCount = countAllComments(comments);
         setCommentCount(totalCount);
 
-        try {
-          const userData = await getUser();
-          setUser(userData);
-        } catch {
-          setUser(null);
-        }
+        const userData = await getUser();
+        setUser(userData);
       } catch (err) {
         setError(err.message || "Có lỗi xảy ra khi lấy dữ liệu.");
         console.error(err.message);
@@ -55,7 +53,6 @@ export default function Post() {
     }
   }, [id]);
 
-  // đếm đệ quy số lượng comment và reply
   const countAllComments = (comments) => {
     let count = 0;
     comments.forEach((comment) => {
@@ -88,10 +85,14 @@ export default function Post() {
 
   return (
     <div className={`container mx-auto mb-10 p-4 ${montserrat.className}`}>
+      {/* Nút chọn ngôn ngữ */}
+
       <h1 className="text-[22px] font-normal text-center">
-        {post.title.toUpperCase()}
+        {getLocalizedText(post.title, language).toUpperCase()}
       </h1>
+
       <DividerIcon size={150} className="mb-6" />
+
       <div className="flex gap-8 mt-4 items-center text-gray-500 mb-4 text-sm">
         <div>
           <FaPencil className="inline mr-1 text-[#7687a5]" />
@@ -110,34 +111,47 @@ export default function Post() {
                   {index < post.categories.length - 1 ? ", " : ""}
                 </Link>
               ))
-            : "Không có danh mục"}
+            : language === "vi"
+            ? "Không có danh mục"
+            : "カテゴリーなし"}
         </div>
         <div>
           <FaComments className="inline mr-1 text-[#7687a5]" />
-          {commentCount} Comments
+          {commentCount} {language === "vi" ? "Bình luận" : "コメント"}
         </div>
       </div>
+
       {post.image && (
         <Image
           src={post.image}
-          alt={post.title}
+          alt={getLocalizedText(post.title, language)}
           width={750}
           height={420}
           className="object-cover rounded-lg mb-4"
         />
       )}
-      <p className="text-[16px] mt-10 mb-14">{post.excerpt}</p>
+
+      <p className="text-[16px] mt-10 mb-14">
+        {getLocalizedText(post.excerpt, language, "No excerpt available.")}
+      </p>
+
       <div className="prose mb-16">
         {post.sections.map((section, index) => (
           <div key={index} className="mb-6">
             <h2 className="text-[18px] font-semibold mb-6">
-              {section.subtitle.toUpperCase()}
+              {getLocalizedText(section.subtitle, language).toUpperCase()}
             </h2>
-            <p className="text-[16px] w-[750px]">{section.content}</p>
+            <p className="text-[16px] w-[750px]">
+              {getLocalizedText(
+                section.content,
+                language,
+                "No content available."
+              )}
+            </p>
             {section.image && (
               <img
                 src={section.image}
-                alt={section.subtitle}
+                alt={getLocalizedText(section.subtitle, language)}
                 width={750}
                 height={420}
                 className="object-cover rounded-lg mb-14 mt-8"
@@ -146,9 +160,11 @@ export default function Post() {
           </div>
         ))}
       </div>
+
       <div className="border-t border-t-gray-300 w-fit pt-6 mb-4 text-sm text-gray-700">
-        SHARE THIS:
+        {language === "vi" ? "CHIA SẺ:" : "共有:"}
       </div>
+
       <button
         onClick={handleShare}
         className="border border-gray-300 flex gap-3 px-4 py-2 rounded transition-colors hover:bg-gray-100"
@@ -157,24 +173,28 @@ export default function Post() {
       </button>
 
       <div className="w-[90px] border-t border-gray-300 mt-8 mb-[100px]"></div>
+
       <div className="flex items-start justify-between gap-4 pb-6 mb-[100px]">
         <div className="w-[100px] h-[100px] rounded-full overflow-hidden shrink-0">
           <img
             src={post.owner?.avatar || "/default-avatar.jpg"}
-            alt={`${post.owner?.name || "User"} avatar`}
+            alt={getLocalizedText(post.owner?.name, language, "Unknown")}
             className="w-full h-full object-cover"
           />
         </div>
         <div className="flex-1">
           <p className="text-[#7687a5] mb-4">
-            POSTED BY{" "}
+            {language === "vi" ? "ĐĂNG BỞI" : "投稿者"}{" "}
             <span className="text-[#f5b04e] font-[500] uppercase">
-              {post.owner?.name || "Unknown"}
+              {getLocalizedText(post.owner?.name, language, "Unknown")}
             </span>
           </p>
-          <p className="text-[#555] leading-relaxed">{post.owner?.bio}</p>
+          <p className="text-[#555] leading-relaxed">
+            {getLocalizedText(post.owner?.bio, language)}
+          </p>
         </div>
       </div>
+
       <CommentSection post={post} />
     </div>
   );

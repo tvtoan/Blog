@@ -7,8 +7,11 @@ import { montserrat } from "../lib/font";
 import DividerIcon from "./DividerIcon";
 import { getUser } from "@/app/services/authService";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/app/context/LanguageContext";
+import { getLocalizedText } from "@/lib/getLocalizedText"; // Hàm lấy văn bản theo ngôn ngữ
 
 export default function CommentSection({ post }) {
+  const { language } = useLanguage();
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [replyTo, setReplyTo] = useState(null);
@@ -50,12 +53,8 @@ export default function CommentSection({ post }) {
 
   useEffect(() => {
     async function fetchUser() {
-      try {
-        const data = await getUser();
-        setUser(data);
-      } catch {
-        setUser(null);
-      }
+      const data = await getUser();
+      setUser(data);
     }
     fetchUser();
   }, []);
@@ -105,7 +104,7 @@ export default function CommentSection({ post }) {
   return (
     <div className={`container mx-auto p-4 w-full ${montserrat.className}`}>
       <h2 className="text-[20px] font-[500] mb-2 text-center uppercase">
-        {totalComments} THOUGHTS ON {post.title}
+        {totalComments} THOUGHTS ON {getLocalizedText(post.title, language)}
       </h2>
       <DividerIcon size={200} />
 

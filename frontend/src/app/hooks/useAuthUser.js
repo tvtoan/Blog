@@ -1,27 +1,33 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { getUser } from "@/app/services/authService";
 
-export default function useAuthUser() {
+const useAuthUser = () => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // ✅ Luôn bắt đầu là true
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      setLoading(true);
       getUser()
         .then((userData) => {
-          console.log("User data:", userData); // Debug
+          console.log("User data:", userData);
           setUser(userData);
         })
         .catch((error) => {
           console.error("Get user error:", error);
           setUser(null);
-          localStorage.removeItem("token"); // Xóa token không hợp lệ
+          localStorage.removeItem("token");
         })
         .finally(() => setLoading(false));
+    } else {
+      // ✅ Nếu không có token thì cũng cần kết thúc loading
+      setLoading(false);
     }
   }, []);
 
   return { user, loading };
-}
+};
+
+export default useAuthUser;

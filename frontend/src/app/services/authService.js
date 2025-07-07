@@ -18,6 +18,10 @@ export const getUser = async () => {
     console.log("Get user response:", response.data);
     return response.data;
   } catch (error) {
+    // Nếu lỗi là 401 thì return null thay vì throw lỗi
+    if (error.response?.status === 401) {
+      return null;
+    }
     console.error("Get user error:", error.response?.data || error.message);
     throw new Error(error.response?.data?.message || "Failed to fetch user");
   }

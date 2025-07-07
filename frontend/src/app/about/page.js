@@ -8,7 +8,6 @@ import { montserrat } from "@/lib/font";
 import { getAboutData } from "@/app/services/aboutService";
 import useAuthUser from "@/app/hooks/useAuthUser";
 import { useRouter } from "next/navigation";
-import { getImageUrl } from "@/lib/getImageUrl";
 
 const likes = [
   "/avatars/user1.jpg",
@@ -22,6 +21,11 @@ export default function AboutPage() {
   const [post, setPost] = useState(null);
   const { user, loading } = useAuthUser();
   const router = useRouter();
+
+  const currentUrl = typeof window !== "undefined" ? window.location.href : "";
+  const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+    currentUrl
+  )}`;
 
   // Lấy dữ liệu từ API
   useEffect(() => {
@@ -116,10 +120,12 @@ export default function AboutPage() {
           SHARE THIS:
         </div>
 
-        <button className="border border-gray-300 flex items-center gap-2 px-4 py-2 rounded transition-colors hover:bg-gray-100 mb-6">
-          <FaFacebook className="text-blue-600" />
-          <span className="text-sm">Facebook</span>
-        </button>
+        <a href={facebookShareUrl} target="_blank" rel="noopener noreferrer">
+          <button className="border border-gray-300 flex items-center gap-2 px-4 py-2 rounded transition-colors hover:bg-gray-100 mb-6">
+            <FaFacebook className="text-blue-600" />
+            <span className="text-sm">Facebook</span>
+          </button>
+        </a>
 
         <div className="flex items-center gap-3 mb-10">
           <button className="flex items-center gap-2 px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 transition">

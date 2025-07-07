@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -9,12 +10,15 @@ import { AiFillTikTok } from "react-icons/ai";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { montserrat } from "../lib/font";
 import { getPosts } from "@/app/services/postService";
+import { useLanguage } from "@/app/context/LanguageContext"; // ✅ Import context
 
 const Header = () => {
   const [isBlogOpen, setIsBlogOpen] = useState(false);
   const [categories, setCategories] = useState([]);
   const closeTimeoutRef = useRef(null);
   const pathname = usePathname();
+
+  const { language, toggleLanguage } = useLanguage(); // ✅ Sử dụng context
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -46,6 +50,14 @@ const Header = () => {
     }, 500);
   };
 
+  const t = {
+    home: language === "vi" ? "HOME" : "ホーム",
+    blog: language === "vi" ? "BLOG" : "ブログ",
+    youtube: language === "vi" ? "YOUTUBE" : "ユーチューブ",
+    about: language === "vi" ? "ABOUT ME" : "私について",
+    categories: categories, // Danh mục không cần dịch
+  };
+
   return (
     <header
       className={`bg-[#ececec] px-[100px] py-[18px] flex justify-between items-center font-sans text-[12px] border-b border-gray-200 ${montserrat.className}`}
@@ -59,7 +71,7 @@ const Header = () => {
               : "text-[#585656] hover:text-[#e1c680]"
           }`}
         >
-          HOME
+          {t.home}
         </Link>
 
         <div
@@ -75,12 +87,12 @@ const Header = () => {
                 : "text-[#585656] hover:text-[#e1c680]"
             }`}
           >
-            BLOG <MdKeyboardArrowDown className="inline-block w-5 h-5" />
+            {t.blog} <MdKeyboardArrowDown className="inline-block w-5 h-5" />
           </Link>
 
           {isBlogOpen && (
             <div className="absolute top-full -left-[70px] mt-4 text-center bg-white border border-[#e1c680] shadow-md min-w-[200px] z-50 dropdown-menu before:content-[''] before:absolute before:top-[-8px] before:left-1/2 before:-translate-x-1/2 before:w-[14px] before:h-[14px] before:bg-white before:border-l before:border-t before:border-[#e1c680] before:rotate-45">
-              {categories.map((item, index) => (
+              {t.categories.map((item, index) => (
                 <Link
                   key={index}
                   href={`/category/${item.toLowerCase().replace(/\s+/g, "-")}`}
@@ -88,7 +100,7 @@ const Header = () => {
                 >
                   <span
                     className={`relative ${
-                      index !== categories.length - 1
+                      index !== t.categories.length - 1
                         ? "after:content-[''] after:block after:mt-1 after:mx-auto after:w-[80%] after:border-b after:border-[#e1c680] after:transition-all group-hover:after:w-full"
                         : ""
                     }`}
@@ -109,7 +121,7 @@ const Header = () => {
               : "text-[#585656] hover:text-[#e1c680]"
           }`}
         >
-          YOUTUBE
+          {t.youtube}
         </Link>
 
         <Link
@@ -120,19 +132,15 @@ const Header = () => {
               : "text-[#585656] hover:text-[#e1c680]"
           }`}
         >
-          ABOUT ME
+          {t.about}
         </Link>
 
-        <Link
-          href="/jp"
-          className={`font-[400] transition-colors ${
-            isActive("/jp")
-              ? "text-[#e1c680]"
-              : "text-[#585656] hover:text-[#e1c680]"
-          }`}
+        <button
+          onClick={toggleLanguage}
+          className="font-[400] transition-colors text-[#585656] hover:text-[#e1c680]"
         >
-          日本語
-        </Link>
+          {language === "vi" ? "日本語" : "VIETNAMESE"}
+        </button>
       </nav>
 
       <div className="flex space-x-3">

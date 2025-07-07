@@ -3,8 +3,10 @@
 import { useState, useEffect, useRef } from "react";
 import { IoMenuOutline } from "react-icons/io5";
 import Link from "next/link";
+import useAuthUser from "@/app/hooks/useAuthUser"; // 👈 import hook của bạn
 
 export default function AdminToolButton() {
+  const { user, loading } = useAuthUser(); // 👈 lấy user & loading
   const [menuOpen, setMenuOpen] = useState(false);
   const timerRef = useRef(null);
   const containerRef = useRef(null);
@@ -36,6 +38,9 @@ export default function AdminToolButton() {
   const handleMouseEnter = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
   };
+
+  // 👇 Không phải admin thì không render gì cả
+  if (loading || user?.role !== "admin") return null;
 
   return (
     <div
