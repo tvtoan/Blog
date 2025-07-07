@@ -38,6 +38,21 @@ export const createPost = async (req, res) => {
     return res.status(403).json({ message: "Only admins can create posts" });
   }
 
+  if (!title?.vi)
+    return res.status(400).json({ message: "Tiêu đề tiếng Việt là bắt buộc." });
+
+  if (!Array.isArray(sections)) {
+    return res.status(400).json({ message: "Sections phải là một mảng." });
+  }
+
+  for (const section of sections) {
+    if (!section.subtitle?.vi || !section.content?.vi) {
+      return res.status(400).json({
+        message: "Mỗi section cần có subtitle và content tiếng Việt.",
+      });
+    }
+  }
+
   const post = new Post({
     title,
     excerpt,
@@ -54,21 +69,28 @@ export const createPost = async (req, res) => {
 
 export const updatePost = async (req, res) => {
   const { id } = req.params;
-  const { title, content, excerpt, image, categories, sections, readingTime } =
-    req.body;
+  const { title, excerpt, image, categories, sections, readingTime } = req.body;
+
+  if (!title?.vi) {
+    return res.status(400).json({ message: "Tiêu đề tiếng Việt là bắt buộc." });
+  }
+
+  if (!Array.isArray(sections)) {
+    return res.status(400).json({ message: "Sections phải là một mảng." });
+  }
+
+  for (const section of sections) {
+    if (!section.subtitle?.vi || !section.content?.vi) {
+      return res.status(400).json({
+        message: "Mỗi section cần có subtitle và content tiếng Việt.",
+      });
+    }
+  }
 
   try {
     const updatedPost = await Post.findByIdAndUpdate(
       id,
-      {
-        title,
-        content,
-        excerpt,
-        image,
-        categories: Array.isArray(categories) ? categories : [],
-        sections: Array.isArray(sections) ? sections : [],
-        readingTime,
-      },
+      { title, excerpt, image, categories, sections, readingTime },
       { new: true }
     );
 
@@ -78,11 +100,9 @@ export const updatePost = async (req, res) => {
 
     res.json(updatedPost);
   } catch (err) {
-    console.error("Error updating post:", err);
     res.status(500).json({ message: err.message });
   }
 };
-
 export const getPostByTitle = async (req, res) => {
   try {
     const { title } = req.params;
@@ -93,13 +113,14 @@ export const getPostByTitle = async (req, res) => {
     const posts = await Post.find();
     const keyword = removeVietnameseTones(title).toLowerCase();
 
-    const filtered = posts.filter((post) =>
-      removeVietnameseTones(post.title).toLowerCase().includes(keyword)
-    );
+    const filtered = posts.filter((post) => {
+      const titleVi = removeVietnameseTones(post.title?.vi || "").toLowerCase();
+      const titleJp = (post.title?.jp || "").toLowerCase();
+      return titleVi.includes(keyword) || titleJp.includes(keyword);
+    });
 
     res.status(200).json(filtered);
   } catch (err) {
-    console.error("Error fetching posts by title:", err);
     res
       .status(500)
       .json({ message: "Error fetching posts", error: err.message });

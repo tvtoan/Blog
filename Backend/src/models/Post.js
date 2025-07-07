@@ -1,15 +1,27 @@
 import mongoose from "mongoose";
 
 const postSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  excerpt: { type: String },
-  categories: [{ type: String }], // Array of category names (e.g., ["Lifestyle", "Productivity"])
+  title: {
+    vi: { type: String, required: true },
+    jp: { type: String },
+  },
+  excerpt: {
+    vi: { type: String },
+    jp: { type: String },
+  },
+  categories: [{ type: String }],
   image: { type: String },
   sections: [
     {
-      subtitle: { type: String, required: true },
-      content: { type: String, required: true },
-      image: { type: String }, // Optional image URL for each section
+      subtitle: {
+        vi: { type: String, required: true },
+        jp: { type: String },
+      },
+      content: {
+        vi: { type: String, required: true },
+        jp: { type: String },
+      },
+      image: { type: String },
     },
   ],
   createdAt: { type: Date, default: Date.now },

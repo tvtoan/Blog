@@ -38,8 +38,29 @@ export const updateAdmin = async (req, res) => {
     }
 
     if (name !== undefined) admin.name = name;
-    if (bio !== undefined) admin.bio = bio;
-    if (job !== undefined) admin.job = job;
+
+    // Validate bio
+    if (bio !== undefined) {
+      if (!bio.vi) {
+        return res.status(400).json({ message: "Bio tiếng Việt là bắt buộc." });
+      }
+      admin.bio = {
+        vi: bio.vi,
+        jp: bio.jp || "",
+      };
+    }
+
+    // Validate job
+    if (job !== undefined) {
+      if (!job.vi) {
+        return res.status(400).json({ message: "Job tiếng Việt là bắt buộc." });
+      }
+      admin.job = {
+        vi: job.vi,
+        jp: job.jp || "",
+      };
+    }
+
     if (avatar !== undefined) admin.avatar = avatar;
 
     const updatedAdmin = await admin.save();

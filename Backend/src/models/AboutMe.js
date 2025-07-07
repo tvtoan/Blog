@@ -1,16 +1,27 @@
-// models/AboutMe.js
 import mongoose from "mongoose";
 
 const aboutMeSchema = new mongoose.Schema(
   {
-    title: String,
+    title: {
+      vi: { type: String, required: true },
+      jp: { type: String },
+    },
     slug: { type: String, unique: true },
-    excerpt: String,
+    excerpt: {
+      vi: { type: String, required: true },
+      jp: { type: String },
+    },
     image: String,
     sections: [
       {
-        subtitle: String,
-        content: String,
+        subtitle: {
+          vi: { type: String, required: true },
+          jp: { type: String },
+        },
+        content: {
+          vi: { type: String, required: true },
+          jp: { type: String },
+        },
         image: String,
       },
     ],
