@@ -8,6 +8,7 @@ import { montserrat } from "@/lib/font";
 import { getAboutData } from "@/app/services/aboutService";
 import useAuthUser from "@/app/hooks/useAuthUser";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 const likes = [
   "/avatars/user1.jpg",
@@ -21,6 +22,36 @@ export default function AboutPage() {
   const [post, setPost] = useState(null);
   const { user, loading } = useAuthUser();
   const router = useRouter();
+  const { language } = useLanguage();
+
+  const text = {
+    vi: {
+      loading: "Đang tải...",
+      editButton: "Sửa bài",
+      shareText: "SHARE THIS:",
+      shareButton: "Facebook",
+      likeButton: "Like",
+      likes: "lượt thích",
+      defaultTitle: "Giới Thiệu",
+      defaultExcerpt: "",
+      defaultSubtitle: "",
+      defaultContent: "",
+    },
+    jp: {
+      loading: "読み込み中...",
+      editButton: "記事を編集",
+      shareText: "これをシェア：",
+      shareButton: "Facebook",
+      likeButton: "いいね",
+      likes: "いいね",
+      defaultTitle: "自己紹介",
+      defaultExcerpt: "",
+      defaultSubtitle: "",
+      defaultContent: "",
+    },
+  };
+
+  const t = text[language] || text.vi;
 
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
   const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
@@ -36,23 +67,32 @@ export default function AboutPage() {
       } catch (error) {
         console.warn("Không có dữ liệu About Me. Dùng dữ liệu mặc định.");
         setPost({
-          title: "About Me",
-          excerpt: "",
+          title: { vi: t.defaultTitle, jp: t.defaultTitle },
+          excerpt: { vi: t.defaultExcerpt, jp: t.defaultExcerpt },
           image: "",
-          sections: [{ subtitle: "", content: "", image: "" }],
+          sections: [
+            {
+              subtitle: { vi: t.defaultSubtitle, jp: t.defaultSubtitle },
+              content: { vi: t.defaultContent, jp: t.defaultContent },
+              image: "",
+            },
+          ],
         });
       }
     };
     fetchData();
-  }, []);
+  }, [language, t]);
 
-  if (!post) return <div className="text-center mt-10">Đang tải...</div>;
+  if (!post) return <div className="text-center mt-10">{t.loading}</div>;
 
   return (
     <div className={`container mx-auto mb-10 p-4 ${montserrat.className}`}>
       {/* Tiêu đề */}
       <h1 className="text-[22px] font-normal mb-4 text-center">
-        {post.title.toUpperCase()}
+        {(typeof post.title === "object"
+          ? post.title[language] || t.defaultTitle
+          : post.title
+        ).toUpperCase()}
       </h1>
 
       <DividerIcon size={150} className="mb-6" />
@@ -65,7 +105,7 @@ export default function AboutPage() {
             className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition-all"
           >
             <FaPen className="inline mr-2" />
-            Sửa bài
+            {t.editButton}
           </button>
         </div>
       )}
@@ -75,7 +115,11 @@ export default function AboutPage() {
         <div className="flex justify-center mt-6 mb-10">
           <Image
             src={post.image}
-            alt={post.title}
+            alt={
+              typeof post.title === "object"
+                ? post.title[language] || t.defaultTitle
+                : post.title
+            }
             width={750}
             height={420}
             className="object-cover rounded-lg shadow"
@@ -86,7 +130,9 @@ export default function AboutPage() {
       {/* Trích đoạn */}
       {post.excerpt && (
         <p className="text-[16px] text-[#585656] italic leading-relaxed max-w-[750px] mx-auto mb-10 text-center">
-          {post.excerpt}
+          {typeof post.excerpt === "object"
+            ? post.excerpt[language] || t.defaultExcerpt
+            : post.excerpt}
         </p>
       )}
 
@@ -96,15 +142,27 @@ export default function AboutPage() {
           <div key={index} className="space-y-4">
             {section.subtitle && (
               <h2 className="text-[18px] font-semibold text-[#444]">
-                {section.subtitle}
+                {typeof section.subtitle === "object"
+                  ? section.subtitle[language] || t.defaultSubtitle
+                  : section.subtitle}
               </h2>
             )}
-            {section.content && <p>{section.content}</p>}
+            {section.content && (
+              <p>
+                {typeof section.content === "object"
+                  ? section.content[language] || t.defaultContent
+                  : section.content}
+              </p>
+            )}
 
             {section.image && (
               <Image
                 src={section.image}
-                alt={section.subtitle}
+                alt={
+                  typeof section.subtitle === "object"
+                    ? section.subtitle[language] || t.defaultSubtitle
+                    : section.subtitle
+                }
                 width={750}
                 height={420}
                 className="object-cover rounded-lg mt-4 shadow"
@@ -117,20 +175,20 @@ export default function AboutPage() {
       {/* SHARE + LIKE */}
       <div className="w-full max-w-[750px] mx-auto mt-16">
         <div className="border-t border-t-gray-300 w-fit pt-6 mb-4 text-sm text-gray-700">
-          SHARE THIS:
+          {t.shareText}
         </div>
 
         <a href={facebookShareUrl} target="_blank" rel="noopener noreferrer">
           <button className="border border-gray-300 flex items-center gap-2 px-4 py-2 rounded transition-colors hover:bg-gray-100 mb-6">
             <FaFacebook className="text-blue-600" />
-            <span className="text-sm">Facebook</span>
+            <span className="text-sm">{t.shareButton}</span>
           </button>
         </a>
 
         <div className="flex items-center gap-3 mb-10">
           <button className="flex items-center gap-2 px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 transition">
             <FaRegStar className="text-[#333]" />
-            <span className="text-sm">Like</span>
+            <span className="text-sm">{t.likeButton}</span>
           </button>
 
           <div className="flex -space-x-2">
@@ -144,7 +202,9 @@ export default function AboutPage() {
             ))}
           </div>
 
-          <span className="text-sm text-[#e1c680]">{likeCount} likes</span>
+          <span className="text-sm text-[#e1c680]">
+            {likeCount} {t.likes}
+          </span>
         </div>
       </div>
     </div>

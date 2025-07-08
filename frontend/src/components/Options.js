@@ -4,6 +4,10 @@ import { useState, useEffect, useRef } from "react";
 import { IoMenuOutline } from "react-icons/io5";
 import Link from "next/link";
 import useAuthUser from "@/app/hooks/useAuthUser"; // 👈 import hook của bạn
+import { SiAwssecretsmanager } from "react-icons/si";
+import { FaRegAddressBook } from "react-icons/fa6";
+import { IoSettingsOutline } from "react-icons/io5";
+import { BsFileEarmarkPostFill } from "react-icons/bs";
 
 export default function AdminToolButton() {
   const { user, loading } = useAuthUser(); // 👈 lấy user & loading
@@ -59,14 +63,29 @@ export default function AdminToolButton() {
 
       {menuOpen && (
         <div className="ml-4 bg-white border rounded shadow-lg p-4 space-y-3 text-sm text-gray-700 w-52">
-          <Link href="/admin" className="block hover:text-[#cfac1e]">
-            📝 Quản lý Bài viết
+          <Link
+            href="/admin"
+            className=" hover:text-[#cfac1e] flex text-center items-center gap-2"
+          >
+            <BsFileEarmarkPostFill /> Quản lý Bài viết
           </Link>
-          <Link href="/admin/users-list" className="block hover:text-[#cfac1e]">
-            👥 Quản lý Người dùng
+          <Link
+            href="/admin/edit-about"
+            className=" hover:text-[#cfac1e] flex text-center items-center gap-2"
+          >
+            <SiAwssecretsmanager /> Quản lý About Me
           </Link>
-          <Link href="/admin/profile" className="block hover:text-[#cfac1e]">
-            ⚙️ Chỉnh sửa Admin
+          <Link
+            href="/admin/users-list"
+            className=" hover:text-[#cfac1e] flex text-center items-center gap-2"
+          >
+            <FaRegAddressBook /> Quản lý Người dùng
+          </Link>
+          <Link
+            href="/admin/profile"
+            className=" hover:text-[#cfac1e] flex text-center items-center gap-2"
+          >
+            <IoSettingsOutline /> Chỉnh sửa Admin
           </Link>
         </div>
       )}

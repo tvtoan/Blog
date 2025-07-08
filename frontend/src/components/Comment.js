@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { FaStar } from "react-icons/fa";
-import { likeComment } from "@/app/services/commentService";
+import { likeComment, unLikeComment } from "@/app/services/commentService";
 import { useRouter } from "next/navigation";
 import { getUser } from "@/app/services/authService";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 const DEFAULT_AVATAR = "/cv.jpg";
 
@@ -19,32 +20,70 @@ export default function Comment({
   user,
 }) {
   const [likes, setLikes] = useState(comment.likes?.length || 0);
+  const [isLiked, setIsLiked] = useState(false);
   const [localUser, setLocalUser] = useState(null);
   const router = useRouter();
+  const { language } = useLanguage();
+
+  const labels = {
+    vi: {
+      like: "Thích",
+      likedBy: (count) => `Được thích bởi ${count} người`,
+      likedByOne: "Được thích bởi 1 người",
+      loginToLike: "Đăng nhập để thích",
+      reply: "Trả lời",
+      writeReply: "Viết câu trả lời...",
+      loginToReply: "Bạn cần đăng nhập để trả lời",
+      replyButton: "Gửi trả lời",
+    },
+    jp: {
+      like: "いいね",
+      likedBy: (count) => `${count}人がいいねしました`,
+      likedByOne: "1人がいいねしました",
+      loginToLike: "ログインしていいね",
+      reply: "返信",
+      writeReply: "返信を書く...",
+      loginToReply: "返信するにはログインしてください",
+      replyButton: "返信する",
+    },
+  };
+
+  const t = labels[language] || labels.vi;
 
   useEffect(() => {
     async function fetchUser() {
       try {
         const userData = await getUser();
         setLocalUser(userData);
+        if (comment.likes?.includes(userData?._id)) {
+          setIsLiked(true);
+        }
       } catch {
         setLocalUser(null);
       }
     }
     fetchUser();
-  }, []);
+  }, [comment.likes]);
 
-  const handleLike = async () => {
+  const handleLikeToggle = async () => {
     if (!localUser) {
       router.push("/login");
       return;
     }
+
     try {
-      await likeComment(comment._id);
-      setLikes((prev) => prev + 1);
+      if (isLiked) {
+        await unLikeComment(comment._id);
+        setLikes((prev) => Math.max(prev - 1, 0));
+        setIsLiked(false);
+      } else {
+        await likeComment(comment._id);
+        setLikes((prev) => prev + 1);
+        setIsLiked(true);
+      }
     } catch (error) {
       console.error(error.message);
-      alert(error.message || "Failed to like comment");
+      alert(error.message || "Failed to toggle like");
     }
   };
 
@@ -55,6 +94,13 @@ export default function Comment({
     hour: "numeric",
     minute: "2-digit",
   });
+
+  const renderLikeText = () => {
+    if (likes > 0) {
+      return likes === 1 ? t.likedByOne : t.likedBy(likes);
+    }
+    return localUser ? t.like : t.loginToLike;
+  };
 
   return (
     <div className="mb-10">
@@ -75,6 +121,7 @@ export default function Comment({
                 className="w-full h-full object-cover"
               />
             </div>
+
             <div className="cursor-pointer">
               <p className="text-sm mb-2 hover:text-[#7687a5] font-bold uppercase text-gray-800">
                 {comment.user?.name || "Anonymous"}
@@ -95,26 +142,24 @@ export default function Comment({
                 localUser ? "cursor-pointer" : "cursor-not-allowed"
               } group`}
               onClick={
-                localUser ? handleLike : () => router.push("/auth/login")
+                localUser ? handleLikeToggle : () => router.push("/login")
               }
             >
               <FaStar
-                className={`text-blue-400 mb-1 w-4 h-4 ${
-                  localUser ? "group-hover:text-[#ccc28a]" : "text-gray-400"
-                } transition-colors`}
+                className={`mb-1 w-4 h-4 transition-colors ${
+                  isLiked
+                    ? "text-blue-500"
+                    : "text-gray-400 group-hover:text-[#ccc28a]"
+                }`}
               />
-              {likes > 0
-                ? `Liked by ${likes} ${likes === 1 ? "person" : "people"}`
-                : localUser
-                ? "Like"
-                : "Log in to like"}
+              {renderLikeText()}
             </div>
 
             <button
               className="px-4 py-2 bg-gray-200 mt-6 text-[12px] hover:bg-gray-300 cursor-pointer transition"
               onClick={() => onReply?.(comment)}
             >
-              REPLY
+              {t.reply}
             </button>
           </div>
 
@@ -127,9 +172,7 @@ export default function Comment({
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 className="w-full p-4 rounded-t resize-none h-[100px] focus:outline-none text-sm text-black placeholder:text-gray-500"
-                placeholder={
-                  user ? "Write a reply..." : "Bạn cần đăng nhập để trả lời"
-                }
+                placeholder={user ? t.writeReply : t.loginToReply}
                 disabled={!user}
               />
               <div className="flex justify-end border-t border-gray-300 px-3 py-2">
@@ -138,7 +181,7 @@ export default function Comment({
                   disabled={!user}
                   className="text-xs text-gray-500 border border-gray-300 px-3 py-1 rounded hover:bg-gray-100 transition disabled:opacity-50"
                 >
-                  Reply
+                  {t.replyButton}
                 </button>
               </div>
             </form>

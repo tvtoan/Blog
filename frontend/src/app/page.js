@@ -108,7 +108,7 @@ export default function Home() {
                 </div>
               </div>
               <Image
-                src={post.image}
+                src={post.image || "/default-image.jpg"}
                 alt={getLocalizedText(post.title)}
                 width={800}
                 height={600}

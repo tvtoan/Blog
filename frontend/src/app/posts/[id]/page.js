@@ -18,7 +18,9 @@ import CommentSection from "@/components/CommentSection";
 import { montserrat } from "../../../lib/font";
 import { getLocalizedText } from "@/lib/getLocalizedText"; // ✅ Hàm lấy văn bản theo ngôn ngữ
 import { useLanguage } from "@/app/context/LanguageContext";
-// ✅ Import context để lấy ngôn ngữ
+
+const DEFAULT_AVATAR = "/cv.jpg";
+
 export default function Post() {
   const { language } = useLanguage(); // ✅ Lấy ngôn ngữ từ context
   const [post, setPost] = useState(null);
@@ -85,8 +87,6 @@ export default function Post() {
 
   return (
     <div className={`container mx-auto mb-10 p-4 ${montserrat.className}`}>
-      {/* Nút chọn ngôn ngữ */}
-
       <h1 className="text-[22px] font-normal text-center">
         {getLocalizedText(post.title, language).toUpperCase()}
       </h1>
@@ -177,7 +177,7 @@ export default function Post() {
       <div className="flex items-start justify-between gap-4 pb-6 mb-[100px]">
         <div className="w-[100px] h-[100px] rounded-full overflow-hidden shrink-0">
           <img
-            src={post.owner?.avatar || "/default-avatar.jpg"}
+            src={post.owner?.avatar || DEFAULT_AVATAR}
             alt={getLocalizedText(post.owner?.name, language, "Unknown")}
             className="w-full h-full object-cover"
           />
@@ -190,7 +190,7 @@ export default function Post() {
             </span>
           </p>
           <p className="text-[#555] leading-relaxed">
-            {getLocalizedText(post.owner?.bio, language)}
+            {getLocalizedText(post.owner?.bio, language, "Chưa có mô tả")}
           </p>
         </div>
       </div>

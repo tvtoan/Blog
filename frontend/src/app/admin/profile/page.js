@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { updateAdmin } from "@/app/services/authService";
 import { useAdmin } from "@/app/context/AdminContext";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 export default function EditAdminPage() {
   const [form, setForm] = useState({
@@ -12,8 +13,39 @@ export default function EditAdminPage() {
     avatar: "",
   });
   const [loading, setLoading] = useState(true);
-
   const { admin, fetchAdmin, loadingAdmin } = useAdmin();
+  const { language } = useLanguage();
+
+  const text = {
+    vi: {
+      title: "👤 Chỉnh sửa thông tin Admin",
+      loading: "Đang tải dữ liệu admin...",
+      name: "Tên Admin",
+      bio_vi: "Tiểu sử (Bio) - 🇻🇳 Tiếng Việt",
+      bio_jp: "Tiểu sử (Bio) - 🇯🇵 Tiếng Nhật",
+      job_vi: "Công việc - 🇻🇳 Tiếng Việt",
+      job_jp: "Công việc - 🇯🇵 Tiếng Nhật",
+      avatar: "Ảnh đại diện (URL)",
+      save: "💾 Lưu thay đổi",
+      success: "✅ Cập nhật thành công",
+      error: "❌ Lỗi khi cập nhật: ",
+    },
+    jp: {
+      title: "👤 管理者情報の編集",
+      loading: "管理者データを読み込み中...",
+      name: "管理者名",
+      bio_vi: "経歴 (Bio) - 🇻🇳 ベトナム語",
+      bio_jp: "経歴 (Bio) - 🇯🇵 日本語",
+      job_vi: "職業 - 🇻🇳 ベトナム語",
+      job_jp: "職業 - 🇯🇵 日本語",
+      avatar: "アバター画像 (URL)",
+      save: "💾 変更を保存",
+      success: "✅ 更新成功",
+      error: "❌ 更新エラー: ",
+    },
+  };
+
+  const t = text[language] || text.vi;
 
   useEffect(() => {
     if (admin) {
@@ -55,32 +87,26 @@ export default function EditAdminPage() {
     try {
       await updateAdmin(form);
       await fetchAdmin();
-      alert("✅ Cập nhật thành công");
+      alert(t.success);
     } catch (error) {
-      console.error("❌ Lỗi khi cập nhật:", error);
-      alert(error.message || "❌ Lỗi khi cập nhật");
+      console.error("Failed to update admin:", error);
+      alert(t.error + (error.message || ""));
     }
   };
 
   if (loading) {
-    return (
-      <div className="p-4 text-center text-yellow-600">
-        Đang tải dữ liệu admin...
-      </div>
-    );
+    return <div className="p-4 text-center text-yellow-600">{t.loading}</div>;
   }
 
   return (
     <div className="p-6 max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6 text-[#cfac1e]">
-        👤 Chỉnh sửa thông tin Admin
-      </h1>
+      <h1 className="text-2xl font-bold mb-6 text-[#cfac1e]">{t.title}</h1>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Tên Admin */}
         <div>
           <label className="block mb-1 font-medium text-[#cfac1e]">
-            Tên Admin
+            {t.name}
           </label>
           <input
             type="text"
@@ -94,7 +120,7 @@ export default function EditAdminPage() {
         {/* Tiểu sử (Bio) */}
         <div>
           <label className="block mb-1 font-medium text-[#cfac1e]">
-            Tiểu sử (Bio) - 🇻🇳 Tiếng Việt
+            {t.bio_vi}
           </label>
           <input
             type="text"
@@ -103,7 +129,7 @@ export default function EditAdminPage() {
             className="w-full p-3 border rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#cfac1e]"
           />
           <label className="block mt-2 mb-1 font-medium text-[#cfac1e]">
-            Tiểu sử (Bio) - 🇯🇵 Tiếng Nhật
+            {t.bio_jp}
           </label>
           <input
             type="text"
@@ -116,7 +142,7 @@ export default function EditAdminPage() {
         {/* Công việc (Job) */}
         <div>
           <label className="block mb-1 font-medium text-[#cfac1e]">
-            Công việc - 🇻🇳 Tiếng Việt
+            {t.job_vi}
           </label>
           <input
             type="text"
@@ -125,7 +151,7 @@ export default function EditAdminPage() {
             className="w-full p-3 border rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#cfac1e]"
           />
           <label className="block mt-2 mb-1 font-medium text-[#cfac1e]">
-            Công việc - 🇯🇵 Tiếng Nhật
+            {t.job_jp}
           </label>
           <input
             type="text"
@@ -138,7 +164,7 @@ export default function EditAdminPage() {
         {/* Ảnh đại diện */}
         <div>
           <label className="block mb-1 font-medium text-[#cfac1e]">
-            Ảnh đại diện (URL)
+            {t.avatar}
           </label>
           <input
             type="text"
@@ -154,7 +180,7 @@ export default function EditAdminPage() {
             type="submit"
             className="bg-[#cfac1e] text-white font-semibold px-6 py-3 rounded hover:bg-[#b89514] transition"
           >
-            💾 Lưu thay đổi
+            {t.save}
           </button>
         </div>
       </form>

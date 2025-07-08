@@ -9,14 +9,39 @@ import { FaArrowRight } from "react-icons/fa6";
 import { slugifyCategory } from "../../../lib/slugifyCategory";
 import { getOriginalCategoryFromSlug } from "@/lib/categoryHelpers";
 import { getPosts } from "@/app/services/postService";
+import { useLanguage } from "@/app/context/LanguageContext";
+import { montserrat } from "../../../lib/font";
 
 export default function CategoryPage() {
   const { category } = useParams();
+  const { language } = useLanguage();
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [displayCount, setDisplayCount] = useState(8);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [language, setLanguage] = useState("vi"); // ✅ Ngôn ngữ: vi hoặc jp
+
+  const text = {
+    vi: {
+      category: "Thể loại",
+      unknown: "Không xác định",
+      loading: "Đang tải...",
+      noPosts: "Không có bài viết nào trong thể loại này.",
+      readTime: "Thời gian đọc",
+      readMore: "ĐỌC TIẾP",
+      loadMore: "XEM THÊM",
+    },
+    jp: {
+      category: "カテゴリー",
+      unknown: "不明",
+      loading: "読み込み中...",
+      noPosts: "このカテゴリーには記事がありません。",
+      readTime: "読書時間",
+      readMore: "続きを読む",
+      loadMore: "もっと見る",
+    },
+  };
+
+  const t = text[language];
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -45,7 +70,7 @@ export default function CategoryPage() {
   }, [category]);
 
   const handleLoadMore = () => {
-    setDisplayCount((prevCount) => prevCount + 8);
+    setDisplayCount((prev) => prev + 8);
   };
 
   const displayedPosts = filteredPosts.slice(0, displayCount);
@@ -54,7 +79,7 @@ export default function CategoryPage() {
     : "";
 
   if (loading) {
-    return <div className="container mx-auto p-4 text-center">Đang tải...</div>;
+    return <div className="container mx-auto p-4 text-center">{t.loading}</div>;
   }
 
   if (error) {
@@ -66,30 +91,9 @@ export default function CategoryPage() {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      {/* Nút chọn ngôn ngữ */}
-      <div className="flex justify-end mb-6 space-x-4">
-        <button
-          onClick={() => setLanguage("vi")}
-          className={`px-4 py-2 rounded ${
-            language === "vi" ? "bg-[#cfac1e] text-white" : "bg-gray-200"
-          }`}
-        >
-          🇻🇳 Tiếng Việt
-        </button>
-        <button
-          onClick={() => setLanguage("jp")}
-          className={`px-4 py-2 rounded ${
-            language === "jp" ? "bg-[#cfac1e] text-white" : "bg-gray-200"
-          }`}
-        >
-          🇯🇵 日本語
-        </button>
-      </div>
-
+    <div className={`container mx-auto p-4 ${montserrat.className}`}>
       <h1 className="text-[40px] text-center mb-14">
-        {language === "vi" ? "Thể loại" : "カテゴリー"}:{" "}
-        {originalCategory || (language === "vi" ? "Không xác định" : "不明")}
+        {t.category}: {originalCategory || t.unknown}
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -116,9 +120,8 @@ export default function CategoryPage() {
                   })}
                 </div>
                 <div>
-                  {language === "vi"
-                    ? `Thời gian đọc ${post.readingTime} phút.`
-                    : `読書時間 ${post.readingTime} 分`}
+                  {t.readTime} {post.readingTime}{" "}
+                  {language === "vi" ? "phút." : "分"}
                 </div>
               </div>
 
@@ -126,8 +129,8 @@ export default function CategoryPage() {
                 src={post.image}
                 alt={
                   typeof post.title === "object"
-                    ? post.title[language]
-                    : post.title
+                    ? post.title[language] || "No Title"
+                    : post.title || "No Title"
                 }
                 width={800}
                 height={600}
@@ -140,23 +143,19 @@ export default function CategoryPage() {
                   : post.excerpt || "No excerpt"}
               </p>
 
-              <div className="bg-gray-100 text-black hover:bg-gray-200 py-3 px-4 w-full rounded relative group transition-colors duration-1000">
+              <div className="bg-gray-100 text-black hover:bg-gray-200 py-3 px-4 w-full rounded relative group transition-colors duration-300">
                 <Link
                   href={`/posts/${post._id}`}
                   className="font-normal text-[14px] block text-center"
                 >
-                  {language === "vi" ? "ĐỌC TIẾP" : "続きを読む"}
+                  {t.readMore}
                 </Link>
                 <FaArrowRight className="w-3.5 h-3.5 text-[#d3b062] absolute right-10 top-1/2 transform -translate-y-1/2 transition-all duration-300 group-hover:right-5" />
               </div>
             </div>
           ))
         ) : (
-          <p className="text-center text-[#7687a5]">
-            {language === "vi"
-              ? "Không có bài viết nào trong thể loại này."
-              : "このカテゴリーには記事がありません。"}
-          </p>
+          <p className="text-center text-[#7687a5]">{t.noPosts}</p>
         )}
       </div>
 
@@ -164,9 +163,9 @@ export default function CategoryPage() {
         <div className="text-center mt-8">
           <button
             onClick={handleLoadMore}
-            className="bg-gray-100 cursor-pointer text-sm text-black hover:bg-gray-200 py-3 px-6 rounded transition-colors duration-300"
+            className="bg-gray-100 text-sm text-black hover:bg-gray-200 py-3 px-6 rounded transition-colors duration-300"
           >
-            {language === "vi" ? "XEM THÊM" : "もっと見る"}
+            {t.loadMore}
           </button>
         </div>
       )}
