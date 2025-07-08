@@ -3,7 +3,7 @@ import Comment from "../models/Comment.js";
 export const getComments = async (req, res) => {
   const comments = await Comment.find({ postId: req.params.postId }).populate(
     "user",
-    "name"
+    "name avatar bio job role"
   );
   res.json(comments);
 };

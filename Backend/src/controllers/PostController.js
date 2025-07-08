@@ -10,13 +10,16 @@ function removeVietnameseTones(str) {
 
 export const getPosts = async (req, res) => {
   const posts = await Post.find()
-    .populate("owner", "name")
+    .populate("owner", "name avatar bio job role")
     .sort({ createdAt: -1 }); // Sắp xếp mới nhất lên đầu
   res.json(posts);
 };
 
 export const getPost = async (req, res) => {
-  const post = await Post.findById(req.params.id).populate("owner", "name");
+  const post = await Post.findById(req.params.id).populate(
+    "owner",
+    "name avatar bio job role"
+  );
   if (!post) return res.status(404).json({ message: "Post not found" });
   res.json(post);
 };
