@@ -3,22 +3,24 @@
 import React, { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { FaYoutube } from "react-icons/fa";
+import { FaYoutube, FaBars } from "react-icons/fa";
 import { IoLogoFacebook } from "react-icons/io";
 import { ImInstagram } from "react-icons/im";
 import { AiFillTikTok } from "react-icons/ai";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { montserrat } from "../lib/font";
 import { getPosts } from "@/app/services/postService";
-import { useLanguage } from "@/app/context/LanguageContext"; // ✅ Import context
+import { useLanguage } from "@/app/context/LanguageContext";
 
 const Header = () => {
   const [isBlogOpen, setIsBlogOpen] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const closeTimeoutRef = useRef(null);
   const pathname = usePathname();
+  const menuRef = useRef(null); // Thêm ref cho menu
 
-  const { language, toggleLanguage } = useLanguage(); // ✅ Sử dụng context
+  const { language, toggleLanguage } = useLanguage();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -39,30 +41,49 @@ const Header = () => {
     return pathname === path || (path !== "/" && pathname.startsWith(path));
   };
 
-  const handleMouseEnter = () => {
-    clearTimeout(closeTimeoutRef.current);
-    setIsBlogOpen(true);
-  };
+  // ✅ Click outside to close mobile menu
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+      }
+    };
 
-  const handleMouseLeave = () => {
-    closeTimeoutRef.current = setTimeout(() => {
-      setIsBlogOpen(false);
-    }, 500);
-  };
+    if (isMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isMenuOpen]);
 
   const t = {
     home: language === "vi" ? "HOME" : "ホーム",
     blog: language === "vi" ? "BLOG" : "ブログ",
     youtube: language === "vi" ? "YOUTUBE" : "ユーチューブ",
     about: language === "vi" ? "ABOUT ME" : "私について",
-    categories: categories, // Danh mục không cần dịch
+    categories: categories,
   };
 
   return (
     <header
-      className={`bg-[#ececec] px-[100px] py-[18px] flex justify-between items-center font-sans text-[12px] border-b border-gray-200 ${montserrat.className}`}
+      className={`bg-[#ececec] px-6 md:px-[100px] py-[18px] flex justify-between items-center border-b border-gray-200 ${montserrat.className}`}
     >
-      <nav className="flex items-center space-x-6 relative">
+      {/* Mobile Menu Icon */}
+      <div className="md:hidden flex items-center">
+        <button
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className="text-[#585656] hover:text-[#e1c680] text-xl"
+        >
+          <FaBars />
+        </button>
+      </div>
+
+      {/* Desktop Navigation */}
+      <nav className="hidden md:flex items-center space-x-6 text-[12px]">
         <Link
           href="/"
           className={`font-[400] transition-colors ${
@@ -76,8 +97,8 @@ const Header = () => {
 
         <div
           className="relative"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
+          onMouseEnter={() => setIsBlogOpen(true)}
+          onMouseLeave={() => setIsBlogOpen(false)}
         >
           <Link
             href="/category"
@@ -91,22 +112,14 @@ const Header = () => {
           </Link>
 
           {isBlogOpen && (
-            <div className="absolute top-full -left-[70px] mt-4 text-center bg-white border border-[#e1c680] shadow-md min-w-[200px] z-50 dropdown-menu before:content-[''] before:absolute before:top-[-8px] before:left-1/2 before:-translate-x-1/2 before:w-[14px] before:h-[14px] before:bg-white before:border-l before:border-t before:border-[#e1c680] before:rotate-45">
+            <div className="absolute top-full -left-[70px] mt-4 text-center bg-white border border-[#e1c680] shadow-md min-w-[200px] z-50 before:content-[''] before:absolute before:top-[-8px] before:left-1/2 before:-translate-x-1/2 before:w-[14px] before:h-[14px] before:bg-white before:border-l before:border-t before:border-[#e1c680] before:rotate-45">
               {t.categories.map((item, index) => (
                 <Link
                   key={index}
                   href={`/category/${item.toLowerCase().replace(/\s+/g, "-")}`}
-                  className="block px-4 py-2 text-[#585656] hover:bg-gray-100 hover:text-[#e1c680] transition-colors relative"
+                  className="block px-4 py-2 text-[#585656] hover:bg-gray-100 hover:text-[#e1c680] transition-colors"
                 >
-                  <span
-                    className={`relative ${
-                      index !== t.categories.length - 1
-                        ? "after:content-[''] after:block after:mt-1 after:mx-auto after:w-[80%] after:border-b after:border-[#e1c680] after:transition-all group-hover:after:w-full"
-                        : ""
-                    }`}
-                  >
-                    {item}
-                  </span>
+                  {item}
                 </Link>
               ))}
             </div>
@@ -143,38 +156,85 @@ const Header = () => {
         </button>
       </nav>
 
-      <div className="flex space-x-3">
+      {/* Mobile Menu Dropdown */}
+      {isMenuOpen && (
+        <div
+          ref={menuRef}
+          className="absolute top-[60px] left-0 w-full bg-white border-t border-gray-200 shadow-lg z-50 flex flex-col text-center text-[14px] md:hidden"
+        >
+          <Link
+            href="/"
+            onClick={() => setIsMenuOpen(false)}
+            className="py-3 border-b hover:bg-gray-100"
+          >
+            {t.home}
+          </Link>
+          <Link
+            href="/category"
+            onClick={() => setIsMenuOpen(false)}
+            className="py-3 border-b hover:bg-gray-100"
+          >
+            {t.blog}
+          </Link>
+          <Link
+            href="/youtube"
+            onClick={() => setIsMenuOpen(false)}
+            className="py-3 border-b hover:bg-gray-100"
+          >
+            {t.youtube}
+          </Link>
+          <Link
+            href="/about"
+            onClick={() => setIsMenuOpen(false)}
+            className="py-3 border-b hover:bg-gray-100"
+          >
+            {t.about}
+          </Link>
+          <button
+            onClick={() => {
+              toggleLanguage();
+              setIsMenuOpen(false);
+            }}
+            className="py-3 hover:bg-gray-100"
+          >
+            {language === "vi" ? "日本語" : "VIETNAMESE"}
+          </button>
+        </div>
+      )}
+
+      {/* Social Icons */}
+      <div className="flex space-x-3 text-black text-[16px]">
         <a
           href="https://facebook.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-black hover:text-[#e1c680] transition-colors"
+          className="hover:text-[#e1c680]"
         >
-          <IoLogoFacebook className="w-4 h-4" />
+          <IoLogoFacebook />
         </a>
         <a
           href="https://tiktok.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-black hover:text-[#e1c680] transition-colors"
+          className="hover:text-[#e1c680]"
         >
-          <AiFillTikTok className="w-4 h-4" />
+          <AiFillTikTok />
         </a>
         <a
           href="https://instagram.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-black hover:text-[#e1c680] transition-colors"
+          className="hover:text-[#e1c680]"
         >
-          <ImInstagram className="mt-0.5" />
+          <ImInstagram />
         </a>
         <a
           href="https://youtube.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-black hover:text-[#e1c680] transition-colors"
+          className="hover:text-[#e1c680]"
         >
-          <FaYoutube className="w-4 h-4" />
+          <FaYoutube />
         </a>
       </div>
     </header>

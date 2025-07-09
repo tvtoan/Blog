@@ -21,15 +21,25 @@ export default function RootLayout({ children }) {
           <AdminProvider>
             <Header />
             <Title />
-            <div className="flex flex-1 max-w-7xl md:w-7xl mx-auto">
-              <main className="flex-1 py-5 px-10 mr-10 bg-white">
+
+            {/* ✅ Thẻ cha full width + responsive */}
+            <div className="flex flex-col md:flex-row flex-1 w-full max-w-full md:max-w-7xl mx-auto px-4 md:px-0">
+              {/* Main content */}
+              <main className="w-full md:flex-1 py-5 px-0 md:px-10 md:mr-10 bg-white">
                 {children}
               </main>
-              <Sidebar />
+
+              {/* Sidebar */}
+              <div className="w-full md:w-auto py-5 md:py-0 px-0 md:px-0">
+                <Sidebar />
+              </div>
             </div>
+
+            {/* Admin Tool Button */}
             <div className="fixed top-1/2 left-4 transform -translate-y-1/2 z-50">
               <AdminToolButton />
             </div>
+
             <Footer />
           </AdminProvider>
         </LanguageProvider>

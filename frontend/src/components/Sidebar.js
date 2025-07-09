@@ -99,7 +99,9 @@ const Sidebar = () => {
   const t = text[language]; // 👉 lấy ngôn ngữ từ context
 
   return (
-    <aside className={`w-[300px] p-5 bg-white ${montserrat.className}`}>
+    <aside
+      className={`w-full md:w-[300px] p-5 bg-white ${montserrat.className}`}
+    >
       {/* Search */}
       <div ref={searchContainerRef} className="mb-8 relative">
         <form onSubmit={handleSearchSubmit} className="relative flex">

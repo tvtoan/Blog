@@ -54,12 +54,13 @@ export default function UserListPage() {
   }
 
   return (
-    <div className="p-8 bg-white rounded-lg shadow-md max-w-5xl mx-auto my-8">
-      <h1 className="text-2xl font-semibold text-[#333] mb-6 text-center uppercase tracking-wide">
+    <div className="p-4 md:p-8 bg-white rounded-lg shadow-md max-w-5xl mx-auto my-8 w-full">
+      <h1 className="text-xl md:text-2xl font-semibold text-[#333] mb-6 text-center uppercase tracking-wide">
         {t.title}
       </h1>
 
-      <div className="overflow-x-auto">
+      {/* ✅ Desktop Table */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full border border-gray-200 rounded-lg text-sm">
           <thead>
             <tr className="bg-[#f5f5f5] text-[#7687a5] uppercase text-xs">
@@ -97,6 +98,47 @@ export default function UserListPage() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* ✅ Mobile Card View */}
+      <div className="block md:hidden space-y-4">
+        {users.map((user) => (
+          <div
+            key={user._id}
+            className="border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition"
+          >
+            <p className="text-[#333] font-semibold mb-1">
+              {t.name}:{" "}
+              <span className="font-normal">
+                {typeof user.name === "object"
+                  ? user.name[language] || t.notUpdated
+                  : user.name || t.notUpdated}
+              </span>
+            </p>
+            <p className="text-[#555] text-sm mb-1">
+              {t.email}: <span className="font-medium">{user.email}</span>
+            </p>
+            <p className="text-[#555] text-sm mb-1">
+              {t.role}: <span className="font-medium">{user.role}</span>
+            </p>
+            <p className="text-[#555] text-sm mb-1 italic">
+              {t.bio}:{" "}
+              <span>
+                {typeof user.bio === "object"
+                  ? user.bio[language] || t.notUpdated
+                  : user.bio || t.notUpdated}
+              </span>
+            </p>
+            <p className="text-[#555] text-sm">
+              {t.job}:{" "}
+              <span>
+                {typeof user.job === "object"
+                  ? user.job[language] || t.notUpdated
+                  : user.job || t.notUpdated}
+              </span>
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -125,17 +125,19 @@ export default function CategoryPage() {
                 </div>
               </div>
 
-              <Image
-                src={post.image}
-                alt={
-                  typeof post.title === "object"
-                    ? post.title[language] || "No Title"
-                    : post.title || "No Title"
-                }
-                width={800}
-                height={600}
-                className="rounded-lg mb-4 w-full h-64 object-cover"
-              />
+              {post.image && (
+                <Image
+                  src={post.image}
+                  alt={
+                    typeof post.title === "object"
+                      ? post.title[language] || "No Title"
+                      : post.title || "No Title"
+                  }
+                  width={800}
+                  height={600}
+                  className="rounded-lg mb-4 w-full h-64 object-cover"
+                />
+              )}
 
               <p className="text-gray-600 text-left mb-6">
                 {typeof post.excerpt === "object"

@@ -236,7 +236,7 @@ export default function AdminPostPage() {
         {t.managePosts}
       </h1>
 
-      <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm mb-12">
+      <div className="bg-white border md:w-full w-auto border-gray-200 p-6 rounded-xl shadow-sm mb-12">
         <form
           onSubmit={(e) => {
             e.preventDefault();
