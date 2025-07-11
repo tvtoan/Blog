@@ -7,16 +7,17 @@ import Link from "next/link";
 import DividerIcon from "@/components/DividerIcon";
 import Image from "next/image";
 import { FaArrowRight } from "react-icons/fa6";
-import { useLanguage } from "./context/LanguageContext";
 import { getLocalizedText } from "@/lib/getLocalizedText";
+import useTranslation from "@/app/hooks/useTranslations";
 
 export default function Home() {
-  const { language } = useLanguage(); // Lấy ngôn ngữ từ context
   const [posts, setPosts] = useState([]);
   const [displayCount, setDisplayCount] = useState(8);
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [error, setError] = useState(null);
-
+  const translations = useTranslation();
+  const t = translations?.Home || {};
+  console.log("Translations:", translations);
   const user = useAuthUser();
 
   useEffect(() => {
@@ -40,29 +41,6 @@ export default function Home() {
   };
 
   const displayedPosts = posts.slice(0, displayCount);
-
-  const labels = {
-    vi: {
-      create: "Tạo bài viết mới",
-      loading: "Đang tải bài viết...",
-      error: "Có lỗi xảy ra.",
-      noPosts: "Không có bài viết nào.",
-      readingTime: "phút đọc",
-      readMore: "ĐỌC THÊM",
-      olderPosts: "XEM THÊM",
-    },
-    jp: {
-      create: "新しい記事を作成",
-      loading: "記事を読み込み中...",
-      error: "エラーが発生しました。",
-      noPosts: "記事がありません。",
-      readingTime: "分間の読書",
-      readMore: "続きを読む",
-      olderPosts: "さらに表示",
-    },
-  };
-
-  const t = labels[language];
 
   return (
     <div className="container mx-auto p-4">
@@ -92,7 +70,10 @@ export default function Home() {
               className="mb-10 p-4 rounded flex flex-col items-center"
             >
               <h2 className="text-[20px] font-normal text-center">
-                {getLocalizedText(post.title).toUpperCase()}
+                {getLocalizedText(
+                  post.title,
+                  translations.language
+                ).toUpperCase()}
               </h2>
               <DividerIcon size={150} />
               <div className="text-gray-500 flex gap-5 text-[13px] mb-5">
@@ -109,13 +90,17 @@ export default function Home() {
               </div>
               <Image
                 src={post.image || "/default-image.jpg"}
-                alt={getLocalizedText(post.title)}
+                alt={getLocalizedText(post.title, translations.language)}
                 width={800}
                 height={600}
                 className="rounded-lg mb-4 w-full h-64 object-cover"
               />
               <p className="text-gray-600 text-center mb-6">
-                {getLocalizedText(post.excerpt, "No excerpt")}
+                {getLocalizedText(
+                  post.excerpt,
+                  translations.language,
+                  "No excerpt"
+                )}
               </p>
               <div className="bg-gray-100 text-black hover:bg-gray-200 py-3 px-4 w-full rounded relative group transition-colors duration-1000">
                 <Link

@@ -3,56 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getAboutData, updateAboutData } from "@/app/services/aboutService";
-import { useLanguage } from "@/app/context/LanguageContext";
 import useAuthUser from "@/app/hooks/useAuthUser";
-
-const text = {
-  vi: {
-    editTitle: "📝 Chỉnh sửa bài About Me",
-    placeholderTitle: "Tiêu đề (Tiếng Việt)",
-    placeholderTitle_1: "Tiêu đề (Tiếng Nhật)",
-    placeholderExcerpt: "Tóm tắt (Tiếng Việt)",
-    placeholderExcerpt_1: "Tóm tắt (Tiếng Nhật)",
-    placeholderImage: "Link ảnh bìa",
-    sectionHeading: "📚 Nội dung từng phần",
-    sectionTitle: "Tiêu đề nhỏ (Tiếng Việt)",
-    sectionTitle_1: "Tiêu đề nhỏ (Tiếng Nhật)",
-    sectionContent: "Nội dung (Tiếng Việt)",
-    sectionContent_1: "Nội dung (Tiếng Nhật)",
-    sectionImage: "URL ảnh (tuỳ chọn)",
-    addSection: "+ Thêm section",
-    save: "💾 Lưu thay đổi",
-    saving: "💾 Đang lưu...",
-    loading: "Đang tải dữ liệu...",
-    noAccess: "🚫 Bạn không có quyền truy cập trang này.",
-    saved: "✅ Đã lưu bài giới thiệu.",
-    error: "❌ Lỗi khi lưu: ",
-  },
-  jp: {
-    editTitle: "📝 自己紹介を編集",
-    placeholderTitle: "タイトル (日本語)",
-    placeholderTitle_1: "タイトル (英語)",
-    placeholderExcerpt: "要約 (日本語)",
-    placeholderExcerpt_1: "要約 (英語)",
-    placeholderImage: "カバー画像のリンク",
-    sectionHeading: "📚 セクションの内容",
-    sectionTitle: "小見出し (日本語)",
-    sectionTitle_1: "小見出し (英語)",
-    sectionContent: "内容 (日本語)",
-    sectionContent_1: "内容 (英語)",
-    sectionImage: "画像URL（オプション）",
-    addSection: "+ セクションを追加",
-    save: "💾 変更を保存",
-    saving: "💾 保存中...",
-    loading: "データを読み込み中...",
-    noAccess: "🚫 このページへのアクセス権がありません。",
-    saved: "✅ 自己紹介が保存されました。",
-    error: "❌ 保存エラー: ",
-  },
-};
+import useTranslation from "@/app/hooks/useTranslations";
 
 export default function EditAboutPage() {
-  const { language } = useLanguage();
   const { user, loading } = useAuthUser();
   const [form, setForm] = useState({
     title: { vi: "", jp: "" },
@@ -64,8 +18,8 @@ export default function EditAboutPage() {
   });
   const [saving, setSaving] = useState(false);
   const [fetching, setFetching] = useState(true);
-
-  const t = text[language] || text.vi;
+  const translations = useTranslation();
+  const t = translations?.EditAbout || {};
 
   useEffect(() => {
     const fetch = async () => {

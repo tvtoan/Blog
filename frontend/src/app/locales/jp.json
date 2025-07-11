@@ -1,0 +1,153 @@
+{
+  "AdminPost": {
+    "managePosts": "🛠️ 投稿管理",
+    "confirmDelete": "投稿を削除しますか？",
+    "edit": "編集",
+    "delete": "削除",
+    "comments": "コメント",
+    "minutes": "分",
+    "loading": "データを読み込み中...",
+    "noAccess": "🚫 このページへのアクセス権がありません。",
+    "error": "❌ エラー: ",
+    "title": "タイトル (日本語)",
+    "title_1": "タイトル (英語)",
+    "excerpt": "要約 (日本語)",
+    "excerpt_1": "要約 (英語)",
+    "categories": "カテゴリー (カンマ区切り)",
+    "readingTime": "読書時間",
+    "imageUrl": "投稿画像URL",
+    "sections": "セクション",
+    "addSection": "セクションを追加",
+    "submit": "投稿する",
+    "smallTitle": "小見出し (日本語)",
+    "smallTitle_1": "小見出し (英語)",
+    "content": "内容 (日本語)",
+    "content_1": "内容 (英語)",
+    "image": "画像URL",
+    "saving": "💾 保存中...",
+    "saved": "✅ 投稿が保存されました。"
+  },
+  
+  "SearchResult": {
+    "searchTitle": "検索結果:",
+    "noResult": "該当する記事がありません。",
+    "readingTime": "分間の読書",
+    "readMore": "続きを読む",
+    "olderPosts": "さらに表示",
+    "loading": "読み込み中...",
+    "error": "検索中にエラーが発生しました。"
+  },
+  "Sidebar": {
+    "search": "検索...",
+    "about": "私について",
+    "archives": "アーカイブ",
+    "categories": "カテゴリー",
+    "loading": "読み込み中...",
+    "noAdmin": "管理者情報がありません。",
+    "noPosts": "投稿がありません。",
+    "noCategories": "カテゴリーがありません。"
+  },
+ "Comment": {
+    "like": "いいね",
+    "likedBy": "",
+    "people": "人がいいねしました",
+    "likedByOne": "1人がいいねしました",
+    "loginToLike": "ログインしていいね",
+    "reply": "返信",
+    "writeReply": "返信を書く...",
+    "loginToReply": "返信するにはログインしてください",
+    "replyButton": "返信する"
+  },
+  "CategoryList": {
+    "title": "すべてのカテゴリー",
+    "loading": "読み込み中",
+    "noCategories": "カテゴリーがありません。...",
+    "posts": "記事"
+  },
+  "Category": {
+    "category": "カテゴリー",
+    "unknown": "不明",
+    "loading": "読み込み中...",
+    "noPosts": "このカテゴリーには記事がありません。",
+    "readTime": "読書時間",
+    "readMore": "続きを読む",
+    "loadMore": "もっと見る"
+  },
+  "Login": {
+    "title": "ブログにログイン",
+    "loginGoogle": "Googleでログイン",
+    "loginGitHub": "GitHubでログイン",
+    "loginFacebook": "Facebookでログイン"
+  },
+  "UserList": {
+    "title": "ユーザー一覧",
+    "loading": "ユーザーリストを読み込み中...",
+    "name": "名前",
+    "email": "メール",
+    "role": "役割",
+    "bio": "自己紹介",
+    "job": "職業",
+    "notUpdated": "未更新"
+  },
+  "AdminInfo": {
+    "title": "👤 管理者情報の編集",
+    "loading": "管理者データを読み込み中...",
+    "name": "管理者名",
+    "bio_vi": "経歴 (Bio) - ベトナム語",
+    "bio_jp": "経歴 (Bio) -  日本語",
+    "job_vi": "職業 - ベトナム語",
+    "job_jp": "職業 - 日本語",
+    "avatar": "アバター画像 (URL)",
+    "save": "💾 変更を保存",
+    "success": "✅ 更新成功",
+    "error": "❌ 更新エラー: "
+  },
+  "EditAbout": {
+    "editTitle": "📝 自己紹介を編集",
+    "placeholderTitle": "タイトル (日本語)",
+    "placeholderTitle_1": "タイトル (英語)",
+    "placeholderExcerpt": "要約 (日本語)",
+    "placeholderExcerpt_1": "要約 (英語)",
+    "placeholderImage": "カバー画像のリンク",
+    "sectionHeading": "📚 セクションの内容",
+    "sectionTitle": "小見出し (日本語)",
+    "sectionTitle_1": "小見出し (英語)",
+    "sectionContent": "内容 (日本語)",
+    "sectionContent_1": "内容 (英語)",
+    "sectionImage": "画像URL（オプション）",
+    "addSection": "+ セクションを追加",
+    "save": "💾 変更を保存",
+    "saving": "💾 保存中...",
+    "loading": "データを読み込み中...",
+    "noAccess": "🚫 このページへのアクセス権がありません。",
+    "saved": "✅ 自己紹介が保存されました。",
+    "error": "❌ 保存エラー: "
+  },
+   "About": {
+    "loading": "読み込み中...",
+    "editButton": "記事を編集",
+    "shareText": "これをシェア：",
+    "shareButton": "Facebook",
+    "likeButton": "いいね",
+    "likes": "いいね",
+    "defaultTitle": "自己紹介",
+    "defaultExcerpt": "",
+    "defaultSubtitle": "",
+    "defaultContent": ""
+  },
+  "Home": {
+    "create": "新しい記事を作成",
+    "loading": "記事を読み込み中...",
+    "error": "エラーが発生しました。",
+    "noPosts": "記事がありません。",
+    "readingTime": "分間の読書",
+    "readMore": "続きを読む",
+    "olderPosts": "さらに表示"
+  },
+  "Options": {
+    "post": "記事管理",
+    "about": "自己紹介管理",
+    "users": "ユーザー管理",
+    "admin": "管理者情報管理"
+  }
+} 

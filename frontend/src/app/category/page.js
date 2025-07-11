@@ -4,31 +4,15 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { montserrat } from "../../lib/font";
 import { getPosts } from "@/app/services/postService";
-import { useLanguage } from "@/app/context/LanguageContext";
 import { slugifyCategory } from "@/lib/slugifyCategory";
+import useTranslation from "../hooks/useTranslations";
 
 export default function CategoryList() {
   const [categories, setCategories] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { language } = useLanguage();
-
-  const text = {
-    vi: {
-      title: "Tất cả thể loại",
-      loading: "Đang tải...",
-      noCategories: "Chưa có chuyên mục.",
-      posts: "bài viết",
-    },
-    jp: {
-      title: "すべてのカテゴリー",
-      loading: "読み込み中...",
-      noCategories: "カテゴリーがありません。",
-      posts: "記事",
-    },
-  };
-
-  const t = text[language];
+  const translations = useTranslation();
+  const t = translations?.CategoryList || {};
 
   useEffect(() => {
     const fetchCategories = async () => {

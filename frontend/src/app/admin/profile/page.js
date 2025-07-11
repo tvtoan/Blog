@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { updateAdmin } from "@/app/services/authService";
 import { useAdmin } from "@/app/context/AdminContext";
-import { useLanguage } from "@/app/context/LanguageContext";
+import useTranslation from "@/app/hooks/useTranslations";
 
 export default function EditAdminPage() {
   const [form, setForm] = useState({
@@ -14,38 +14,8 @@ export default function EditAdminPage() {
   });
   const [loading, setLoading] = useState(true);
   const { admin, fetchAdmin, loadingAdmin } = useAdmin();
-  const { language } = useLanguage();
-
-  const text = {
-    vi: {
-      title: "👤 Chỉnh sửa thông tin Admin",
-      loading: "Đang tải dữ liệu admin...",
-      name: "Tên Admin",
-      bio_vi: "Tiểu sử (Bio) - 🇻🇳 Tiếng Việt",
-      bio_jp: "Tiểu sử (Bio) - 🇯🇵 Tiếng Nhật",
-      job_vi: "Công việc - 🇻🇳 Tiếng Việt",
-      job_jp: "Công việc - 🇯🇵 Tiếng Nhật",
-      avatar: "Ảnh đại diện (URL)",
-      save: "💾 Lưu thay đổi",
-      success: "✅ Cập nhật thành công",
-      error: "❌ Lỗi khi cập nhật: ",
-    },
-    jp: {
-      title: "👤 管理者情報の編集",
-      loading: "管理者データを読み込み中...",
-      name: "管理者名",
-      bio_vi: "経歴 (Bio) - 🇻🇳 ベトナム語",
-      bio_jp: "経歴 (Bio) - 🇯🇵 日本語",
-      job_vi: "職業 - 🇻🇳 ベトナム語",
-      job_jp: "職業 - 🇯🇵 日本語",
-      avatar: "アバター画像 (URL)",
-      save: "💾 変更を保存",
-      success: "✅ 更新成功",
-      error: "❌ 更新エラー: ",
-    },
-  };
-
-  const t = text[language] || text.vi;
+  const translations = useTranslation();
+  const t = translations?.AdminInfo || {};
 
   useEffect(() => {
     if (admin) {

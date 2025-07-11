@@ -8,11 +8,10 @@ import { slugifyCategory } from "../lib/slugifyCategory";
 import { getPosts } from "@/app/services/postService";
 import { useRouter } from "next/navigation";
 import { useAdmin } from "@/app/context/AdminContext";
-import { useLanguage } from "@/app/context/LanguageContext"; // 👉 import context để lấy ngôn ngữ
 import { getLocalizedText } from "@/lib/getLocalizedText";
+import useTranslation from "@/app/hooks/useTranslations";
 
 const Sidebar = () => {
-  const { language } = useLanguage(); // 👉 lấy language từ context
   const [isFocused, setIsFocused] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchContainerRef = useRef(null);
@@ -20,6 +19,10 @@ const Sidebar = () => {
   const [archives, setArchives] = useState({});
   const { admin, loadingAdmin } = useAdmin();
   const router = useRouter();
+
+  const translations = useTranslation();
+
+  const t = translations?.Sidebar || {};
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -73,31 +76,6 @@ const Sidebar = () => {
     }
   };
 
-  const text = {
-    vi: {
-      search: "Tìm kiếm...",
-      about: "GIỚI THIỆU",
-      archives: "LƯU TRỮ",
-      categories: "CHUYÊN MỤC",
-      loading: "Đang tải...",
-      noAdmin: "Không có thông tin admin.",
-      noPosts: "Chưa có bài viết.",
-      noCategories: "Chưa có chuyên mục.",
-    },
-    jp: {
-      search: "検索...",
-      about: "私について",
-      archives: "アーカイブ",
-      categories: "カテゴリー",
-      loading: "読み込み中...",
-      noAdmin: "管理者情報がありません。",
-      noPosts: "投稿がありません。",
-      noCategories: "カテゴリーがありません。",
-    },
-  };
-
-  const t = text[language]; // 👉 lấy ngôn ngữ từ context
-
   return (
     <aside
       className={`w-full md:w-[300px] p-5 bg-white ${montserrat.className}`}
@@ -148,17 +126,17 @@ const Sidebar = () => {
           <div className="text-left">
             <img
               src={admin.avatar || "/default-avatar.jpg"}
-              alt={getLocalizedText(admin.name, language, "No Name")}
+              alt={admin.name}
               className="w-full h-auto object-cover mb-4 rounded"
             />
             <h3 className="font-semibold text-lg">
-              {getLocalizedText(admin.name, language, "No Name")}
+              {getLocalizedText(admin.name, translations.language, "No Name")}
             </h3>
             <p className="font-medium text-sm text-gray-700 mt-1 mb-2">
-              {getLocalizedText(admin.job, language, "No Job")}
+              {getLocalizedText(admin.job, translations.language, "No Job")}
             </p>
             <p className="text-sm text-gray-600">
-              {getLocalizedText(admin.bio, language, "No Bio")}
+              {getLocalizedText(admin.bio, translations.language, "No Bio")}
             </p>
           </div>
         ) : (

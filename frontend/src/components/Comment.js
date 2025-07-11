@@ -5,7 +5,7 @@ import { FaStar } from "react-icons/fa";
 import { likeComment, unLikeComment } from "@/app/services/commentService";
 import { useRouter } from "next/navigation";
 import { getUser } from "@/app/services/authService";
-import { useLanguage } from "@/app/context/LanguageContext";
+import useTranslation from "@/app/hooks/useTranslations";
 
 const DEFAULT_AVATAR = "/cv.jpg";
 
@@ -23,32 +23,9 @@ export default function Comment({
   const [isLiked, setIsLiked] = useState(false);
   const [localUser, setLocalUser] = useState(null);
   const router = useRouter();
-  const { language } = useLanguage();
 
-  const labels = {
-    vi: {
-      like: "Thích",
-      likedBy: (count) => `Được thích bởi ${count} người`,
-      likedByOne: "Được thích bởi 1 người",
-      loginToLike: "Đăng nhập để thích",
-      reply: "Trả lời",
-      writeReply: "Viết câu trả lời...",
-      loginToReply: "Bạn cần đăng nhập để trả lời",
-      replyButton: "Gửi trả lời",
-    },
-    jp: {
-      like: "いいね",
-      likedBy: (count) => `${count}人がいいねしました`,
-      likedByOne: "1人がいいねしました",
-      loginToLike: "ログインしていいね",
-      reply: "返信",
-      writeReply: "返信を書く...",
-      loginToReply: "返信するにはログインしてください",
-      replyButton: "返信する",
-    },
-  };
-
-  const t = labels[language] || labels.vi;
+  const translations = useTranslation();
+  const t = translations?.Comment || {};
 
   useEffect(() => {
     async function fetchUser() {
@@ -97,7 +74,7 @@ export default function Comment({
 
   const renderLikeText = () => {
     if (likes > 0) {
-      return likes === 1 ? t.likedByOne : t.likedBy(likes);
+      return likes === 1 ? t.likedByOne : `${t.likedBy} ${likes} ${t.people}`;
     }
     return localUser ? t.like : t.loginToLike;
   };

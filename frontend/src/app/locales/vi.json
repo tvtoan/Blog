@@ -1,0 +1,152 @@
+{
+  "AdminPost": {
+    "managePosts": "🛠️ Quản lý bài viết",
+    "confirmDelete": "Xác nhận xoá bài viết?",
+    "edit": "Sửa",
+    "delete": "Xoá",
+    "comments": "bình luận",
+    "minutes": "phút đọc",
+    "loading": "Đang tải dữ liệu...",
+    "noAccess": "🚫 Bạn không có quyền truy cập trang này.",
+    "error": "❌ Lỗi: ",
+    "title": "Tiêu đề (Tiếng Việt)",
+    "title_1": "Tiêu đề (Tiếng Nhật)",
+    "excerpt": "Tóm tắt (Tiếng Việt)",
+    "excerpt_1": "Tóm tắt (Tiếng Nhật)",
+    "categories": "Thể loại (dấu phẩy)",
+    "readingTime": "Thời gian đọc",
+    "imageUrl": "URL ảnh bài viết",
+    "sections": "Sections",
+    "addSection": "Thêm section",
+    "submit": "Đăng bài viết",
+    "smallTitle": "Tiêu đề nhỏ (Tiếng Việt)",
+    "smallTitle_1": "Tiêu đề nhỏ (Tiếng Nhật)",
+    "content": "Nội dung (Tiếng Việt)",
+    "content_1": "Nội dung (Tiếng Nhật)",
+    "image": "URL ảnh",
+    "saving": "💾 Đang lưu...",
+    "saved": "✅ Đã lưu bài viết."
+  },
+  "SearchResult": {
+    "searchTitle": "Kết quả tìm kiếm cho:",
+    "noResult": "Không có bài viết nào phù hợp.",
+    "readingTime": "phút đọc",
+    "readMore": "ĐỌC THÊM",
+    "olderPosts": "XEM THÊM",
+    "loading": "Đang tải...",
+    "error": "Có lỗi xảy ra khi tìm kiếm."
+  },
+  "Sidebar": {
+    "search": "Tìm kiếm...",
+    "about": "GIỚI THIỆU",
+    "archives": "LƯU TRỮ",
+    "categories": "CHUYÊN MỤC",
+    "loading": "Đang tải...",
+    "noAdmin": "Không có thông tin admin.",
+    "noPosts": "Chưa có bài viết.",
+    "noCategories": "Chưa có chuyên mục."
+  },
+   "Comment": {
+    "like": "Thích",
+    "likedBy": "Được thích bởi",
+    "people": "người",
+    "likedByOne": "Được thích bởi 1 người",
+    "loginToLike": "Đăng nhập để thích",
+    "reply": "Trả lời",
+    "writeReply": "Viết câu trả lời...",
+    "loginToReply": "Bạn cần đăng nhập để trả lời",
+    "replyButton": "Gửi trả lời"
+  },
+  "CategoryList": {
+    "title": "Tất cả thể loại",
+    "loading": "Đang tải ...",
+    "noCategories": "Chưa có chuyên mục .",
+    "posts": "bài viết"
+  },
+  "Category": { 
+    "category": "Thể loại",
+    "unknown": "Không xác định",
+    "loading": "Đang tải...",
+    "noPosts": "Không có bài viết nào trong thể loại này.",
+    "readTime": "Thời gian đọc",
+    "readMore": "ĐỌC TIẾP",
+    "loadMore": "XEM THÊM"
+  },
+  "Login": {
+    "title": "Đăng nhập vào Blog",
+    "loginGoogle": "Đăng nhập bằng Google",
+    "loginGitHub": "Đăng nhập bằng GitHub",
+    "loginFacebook": "Đăng nhập bằng Facebook"
+  },
+  "UserList": {
+    "title": "Danh Sách Người Dùng",
+    "loading": "Đang tải danh sách người dùng...",
+    "name": "Tên",
+    "email": "Email",
+    "role": "Role",
+    "bio": "Bio",
+    "job": "Job",
+    "notUpdated": "Chưa cập nhật"
+  },
+  "AdminInfo": {
+    "title": "👤 Chỉnh sửa thông tin Admin",
+    "loading": "Đang tải dữ liệu admin...",
+    "name": "Tên Admin",
+    "bio_vi": "Tiểu sử (Bio) - Tiếng Việt",
+    "bio_jp": "Tiểu sử (Bio) - Tiếng Nhật",
+    "job_vi": "Công việc - Tiếng Việt",
+    "job_jp": "Công việc - Tiếng Nhật",
+    "avatar": "Ảnh đại diện (URL)",
+    "save": "💾 Lưu thay đổi",
+    "success": "✅ Cập nhật thành công",
+    "error": "❌ Lỗi khi cập nhật: "
+  },
+  "EditAbout": {
+    "editTitle": "📝 Chỉnh sửa bài About Me",
+    "placeholderTitle": "Tiêu đề (Tiếng Việt)",
+    "placeholderTitle_1": "Tiêu đề (Tiếng Nhật)",
+    "placeholderExcerpt": "Tóm tắt (Tiếng Việt)",
+    "placeholderExcerpt_1": "Tóm tắt (Tiếng Nhật)",
+    "placeholderImage": "Link ảnh bìa",
+    "sectionHeading": "📚 Nội dung từng phần",
+    "sectionTitle": "Tiêu đề nhỏ (Tiếng Việt)",
+    "sectionTitle_1": "Tiêu đề nhỏ (Tiếng Nhật)",
+    "sectionContent": "Nội dung (Tiếng Việt)",
+    "sectionContent_1": "Nội dung (Tiếng Nhật)",
+    "sectionImage": "URL ảnh (tuỳ chọn)",
+    "addSection": "+ Thêm section",
+    "save": "💾 Lưu thay đổi",
+    "saving": "💾 Đang lưu...",
+    "loading": "Đang tải dữ liệu...",
+    "noAccess": "🚫 Bạn không có quyền truy cập trang này.",
+    "saved": "✅ Đã lưu bài giới thiệu.",
+    "error": "❌ Lỗi khi lưu: "
+  },
+  "About": {
+    "loading": "Đang tải...",
+    "editButton": "Sửa bài",
+    "shareText": "SHARE THIS:",
+    "shareButton": "Facebook",
+    "likeButton": "Like",
+    "likes": "lượt thích",
+    "defaultTitle": "Giới Thiệu",
+    "defaultExcerpt": "",
+    "defaultSubtitle": "",
+    "defaultContent": ""
+  },
+  "Home": {
+    "create": "Tạo bài viết mới",
+    "loading": "Đang tải bài viết...",
+    "error": "Có lỗi xảy ra.",
+    "noPosts": "Không có bài viết nào.",
+    "readingTime": "phút đọc",
+    "readMore": "ĐỌC THÊM",
+    "olderPosts": "XEM THÊM"
+  },
+  "Options": {
+    "post": "Quản lý bài viết",
+    "about": "Quản lý About Me",
+    "users": "Quản lý người dùng",
+    "admin": "Quản lý thông tin Admin"
+  }
+} 

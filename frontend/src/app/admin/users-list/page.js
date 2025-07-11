@@ -2,37 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { getUsers } from "@/app/services/authService";
-import { useLanguage } from "@/app/context/LanguageContext";
-
+import useTranslation from "@/app/hooks/useTranslations";
+import { getLocalizedText } from "@/lib/getLocalizedText";
 export default function UserListPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { language } = useLanguage();
-
-  const text = {
-    vi: {
-      title: "Danh Sách Người Dùng",
-      loading: "Đang tải danh sách người dùng...",
-      name: "Tên",
-      email: "Email",
-      role: "Role",
-      bio: "Bio",
-      job: "Job",
-      notUpdated: "Chưa cập nhật",
-    },
-    jp: {
-      title: "ユーザー一覧",
-      loading: "ユーザーリストを読み込み中...",
-      name: "名前",
-      email: "メール",
-      role: "役割",
-      bio: "自己紹介",
-      job: "職業",
-      notUpdated: "未更新",
-    },
-  };
-
-  const t = text[language] || text.vi;
+  const translations = useTranslation();
+  const t = translations?.UserList || {};
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -78,21 +54,27 @@ export default function UserListPage() {
                 className="hover:bg-[#fef8e7] transition-colors cursor-pointer"
               >
                 <td className="p-3 border text-[#333] font-medium">
-                  {typeof user.name === "object"
-                    ? user.name[language] || t.notUpdated
-                    : user.name || t.notUpdated}
+                  {getLocalizedText(
+                    user.name,
+                    translations.language,
+                    t.notUpdated
+                  )}
                 </td>
                 <td className="p-3 border text-[#555]">{user.email}</td>
                 <td className="p-3 border text-[#555]">{user.role}</td>
                 <td className="p-3 border text-[#555] italic">
-                  {typeof user.bio === "object"
-                    ? user.bio[language] || t.notUpdated
-                    : user.bio || t.notUpdated}
+                  {getLocalizedText(
+                    user.bio,
+                    translations.language,
+                    t.notUpdated
+                  )}
                 </td>
                 <td className="p-3 border text-[#555]">
-                  {typeof user.job === "object"
-                    ? user.job[language] || t.notUpdated
-                    : user.job || t.notUpdated}
+                  {getLocalizedText(
+                    user.job,
+                    translations.language,
+                    t.notUpdated
+                  )}
                 </td>
               </tr>
             ))}
@@ -110,9 +92,11 @@ export default function UserListPage() {
             <p className="text-[#333] font-semibold mb-1">
               {t.name}:{" "}
               <span className="font-normal">
-                {typeof user.name === "object"
-                  ? user.name[language] || t.notUpdated
-                  : user.name || t.notUpdated}
+                {getLocalizedText(
+                  user.name,
+                  translations.language,
+                  t.notUpdated
+                )}
               </span>
             </p>
             <p className="text-[#555] text-sm mb-1">
@@ -124,17 +108,21 @@ export default function UserListPage() {
             <p className="text-[#555] text-sm mb-1 italic">
               {t.bio}:{" "}
               <span>
-                {typeof user.bio === "object"
-                  ? user.bio[language] || t.notUpdated
-                  : user.bio || t.notUpdated}
+                {getLocalizedText(
+                  user.bio,
+                  translations.language,
+                  t.notUpdated
+                )}
               </span>
             </p>
             <p className="text-[#555] text-sm">
               {t.job}:{" "}
               <span>
-                {typeof user.job === "object"
-                  ? user.job[language] || t.notUpdated
-                  : user.job || t.notUpdated}
+                {getLocalizedText(
+                  user.job,
+                  translations.language,
+                  t.notUpdated
+                )}
               </span>
             </p>
           </div>

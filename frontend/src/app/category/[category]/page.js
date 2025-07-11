@@ -9,39 +9,18 @@ import { FaArrowRight } from "react-icons/fa6";
 import { slugifyCategory } from "../../../lib/slugifyCategory";
 import { getOriginalCategoryFromSlug } from "@/lib/categoryHelpers";
 import { getPosts } from "@/app/services/postService";
-import { useLanguage } from "@/app/context/LanguageContext";
 import { montserrat } from "../../../lib/font";
+import useTranslation from "@/app/hooks/useTranslations";
+import { getLocalizedText } from "@/lib/getLocalizedText";
 
 export default function CategoryPage() {
   const { category } = useParams();
-  const { language } = useLanguage();
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [displayCount, setDisplayCount] = useState(8);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const text = {
-    vi: {
-      category: "Thể loại",
-      unknown: "Không xác định",
-      loading: "Đang tải...",
-      noPosts: "Không có bài viết nào trong thể loại này.",
-      readTime: "Thời gian đọc",
-      readMore: "ĐỌC TIẾP",
-      loadMore: "XEM THÊM",
-    },
-    jp: {
-      category: "カテゴリー",
-      unknown: "不明",
-      loading: "読み込み中...",
-      noPosts: "このカテゴリーには記事がありません。",
-      readTime: "読書時間",
-      readMore: "続きを読む",
-      loadMore: "もっと見る",
-    },
-  };
-
-  const t = text[language];
+  const translations = useTranslation();
+  const t = translations?.Category || {};
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -104,9 +83,11 @@ export default function CategoryPage() {
               className="mb-10 p-4 rounded flex flex-col items-center"
             >
               <h2 className="text-[20px] font-normal text-center">
-                {typeof post.title === "object"
-                  ? post.title[language]?.toUpperCase() || "NO TITLE"
-                  : post.title?.toUpperCase() || "NO TITLE"}
+                {getLocalizedText(
+                  post.title,
+                  translations.language,
+                  "No Title"
+                )?.toUpperCase()}
               </h2>
 
               <DividerIcon size={150} />
@@ -121,18 +102,14 @@ export default function CategoryPage() {
                 </div>
                 <div>
                   {t.readTime} {post.readingTime}{" "}
-                  {language === "vi" ? "phút." : "分"}
+                  {translations.language === "vi" ? "phút." : "分"}
                 </div>
               </div>
 
               {post.image && (
                 <Image
                   src={post.image}
-                  alt={
-                    typeof post.title === "object"
-                      ? post.title[language] || "No Title"
-                      : post.title || "No Title"
-                  }
+                  alt={getLocalizedText(post.title, translations.language)}
                   width={800}
                   height={600}
                   className="rounded-lg mb-4 w-full h-64 object-cover"
@@ -140,9 +117,11 @@ export default function CategoryPage() {
               )}
 
               <p className="text-gray-600 text-left mb-6">
-                {typeof post.excerpt === "object"
-                  ? post.excerpt[language] || "No excerpt"
-                  : post.excerpt || "No excerpt"}
+                {getLocalizedText(
+                  post.excerpt,
+                  translations.language,
+                  "No excerpt available."
+                )}
               </p>
 
               <div className="bg-gray-100 text-black hover:bg-gray-200 py-3 px-4 w-full rounded relative group transition-colors duration-300">

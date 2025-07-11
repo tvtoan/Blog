@@ -7,7 +7,8 @@ import DividerIcon from "@/components/DividerIcon";
 import Image from "next/image";
 import { FaArrowRight } from "react-icons/fa6";
 import { getPostByTitle } from "@/app/services/postService";
-import { useLanguage } from "@/app/context/LanguageContext";
+import useTranslation from "@/app/hooks/useTranslations";
+import { getLocalizedText } from "@/lib/getLocalizedText";
 
 export default function SearchResultPage() {
   const searchParams = useSearchParams();
@@ -17,31 +18,8 @@ export default function SearchResultPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const { language } = useLanguage();
-
-  const text = {
-    vi: {
-      searchTitle: "Kết quả tìm kiếm cho:",
-      noResult: "Không có bài viết nào phù hợp.",
-      readingTime: "phút đọc",
-      readMore: "ĐỌC THÊM",
-      olderPosts: "XEM THÊM",
-      loading: "Đang tải...",
-      error: "Có lỗi xảy ra khi tìm kiếm.",
-    },
-    jp: {
-      searchTitle: "検索結果:",
-      noResult: "該当する記事がありません。",
-      readingTime: "分間の読書",
-      readMore: "続きを読む",
-      olderPosts: "さらに表示",
-      loading: "読み込み中...",
-      error: "検索中にエラーが発生しました。",
-    },
-  };
-
-  const t = text[language] || text.vi;
-
+  const translations = useTranslation();
+  const t = translations.SearchResult;
   useEffect(() => {
     const fetchResults = async () => {
       if (!query) {
@@ -68,13 +46,6 @@ export default function SearchResultPage() {
 
   const handleLoadMore = () => {
     setDisplayCount((prevCount) => prevCount + 8);
-  };
-
-  const getLocalizedText = (textObj) => {
-    if (typeof textObj === "object") {
-      return textObj[language] || Object.values(textObj)[0] || "";
-    }
-    return textObj || "";
   };
 
   const displayedPosts = searchResults.slice(0, displayCount);
@@ -105,7 +76,10 @@ export default function SearchResultPage() {
               className="mb-10 p-4 rounded flex flex-col items-center"
             >
               <h2 className="text-[20px] font-normal text-center">
-                {getLocalizedText(post.title, language).toUpperCase()}
+                {getLocalizedText(
+                  post.title,
+                  translations.language
+                ).toUpperCase()}
               </h2>
               <DividerIcon size={150} />
               <div className="text-[#7687a5] flex gap-5 text-[13px] mb-5">
@@ -122,13 +96,17 @@ export default function SearchResultPage() {
               </div>
               <Image
                 src={post.image}
-                alt={getLocalizedText(post.title, language)}
+                alt={getLocalizedText(post.title, translations.language)}
                 width={800}
                 height={600}
                 className="rounded-lg mb-4 w-full h-64 object-cover"
               />
               <p className="text-gray-600 text-left mb-6">
-                {getLocalizedText(post.excerpt, language, "No excerpt")}
+                {getLocalizedText(
+                  post.excerpt,
+                  translations.language,
+                  "No excerpt"
+                )}
               </p>
               <div className="bg-gray-100 text-black hover:bg-gray-200 py-3 px-4 w-full rounded relative group transition-colors duration-1000">
                 <Link

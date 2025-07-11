@@ -226,7 +226,7 @@ const Header = () => {
           rel="noopener noreferrer"
           className="hover:text-[#e1c680]"
         >
-          <ImInstagram />
+          <ImInstagram className="mt-[1px] w-[13px] h-[13px]" />
         </a>
         <a
           href="https://youtube.com"

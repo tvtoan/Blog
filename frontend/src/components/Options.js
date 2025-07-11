@@ -8,12 +8,15 @@ import { SiAwssecretsmanager } from "react-icons/si";
 import { FaRegAddressBook } from "react-icons/fa6";
 import { IoSettingsOutline } from "react-icons/io5";
 import { BsFileEarmarkPostFill } from "react-icons/bs";
+import useTranslation from "@/app/hooks/useTranslations";
 
 export default function AdminToolButton() {
   const { user, loading } = useAuthUser(); // 👈 lấy user & loading
   const [menuOpen, setMenuOpen] = useState(false);
   const timerRef = useRef(null);
   const containerRef = useRef(null);
+  const translations = useTranslation();
+  const t = translations?.Options || {};
 
   const closeMenu = () => setMenuOpen(false);
 
@@ -67,25 +70,25 @@ export default function AdminToolButton() {
             href="/admin"
             className=" hover:text-[#cfac1e] flex text-center items-center gap-2"
           >
-            <BsFileEarmarkPostFill /> Quản lý Bài viết
+            <BsFileEarmarkPostFill /> {t.post}
           </Link>
           <Link
             href="/admin/edit-about"
             className=" hover:text-[#cfac1e] flex text-center items-center gap-2"
           >
-            <SiAwssecretsmanager /> Quản lý About Me
+            <SiAwssecretsmanager /> {t.about}
           </Link>
           <Link
             href="/admin/users-list"
             className=" hover:text-[#cfac1e] flex text-center items-center gap-2"
           >
-            <FaRegAddressBook /> Quản lý Người dùng
+            <FaRegAddressBook /> {t.users}
           </Link>
           <Link
             href="/admin/profile"
             className=" hover:text-[#cfac1e] flex text-center items-center gap-2"
           >
-            <IoSettingsOutline /> Chỉnh sửa Admin
+            <IoSettingsOutline /> {t.admin}
           </Link>
         </div>
       )}
