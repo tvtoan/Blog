@@ -12,6 +12,7 @@ import { getPosts } from "@/app/services/postService";
 import { montserrat } from "../../../lib/font";
 import useTranslation from "@/app/hooks/useTranslations";
 import { getLocalizedText } from "@/lib/getLocalizedText";
+import getValidImage from "@/lib/getValidImage";
 
 export default function CategoryPage() {
   const { category } = useParams();
@@ -108,7 +109,7 @@ export default function CategoryPage() {
 
               {post.image && (
                 <Image
-                  src={post.image}
+                  src={getValidImage(post?.image)}
                   alt={getLocalizedText(post.title, translations.language)}
                   width={800}
                   height={600}

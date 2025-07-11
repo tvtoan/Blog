@@ -9,6 +9,7 @@ import Image from "next/image";
 import { FaArrowRight } from "react-icons/fa6";
 import { getLocalizedText } from "@/lib/getLocalizedText";
 import useTranslation from "@/app/hooks/useTranslations";
+import getValidImage from "@/lib/getValidImage";
 
 export default function Home() {
   const [posts, setPosts] = useState([]);
@@ -17,7 +18,6 @@ export default function Home() {
   const [error, setError] = useState(null);
   const translations = useTranslation();
   const t = translations?.Home || {};
-  console.log("Translations:", translations);
   const user = useAuthUser();
 
   useEffect(() => {
@@ -27,7 +27,6 @@ export default function Home() {
         setPosts(fetchedPosts);
       } catch (err) {
         setError(err.message || "Lỗi khi lấy danh sách bài viết.");
-        console.error("Lỗi:", err.message);
       } finally {
         setLoadingPosts(false);
       }
@@ -44,7 +43,6 @@ export default function Home() {
 
   return (
     <div className="container mx-auto p-4">
-      {/* Nút chọn ngôn ngữ */}
       <div className="flex justify-between items-center mb-6">
         {user?.role === "admin" && (
           <Link
@@ -89,7 +87,7 @@ export default function Home() {
                 </div>
               </div>
               <Image
-                src={post.image || "/default-image.jpg"}
+                src={getValidImage(post?.image)}
                 alt={getLocalizedText(post.title, translations.language)}
                 width={800}
                 height={600}

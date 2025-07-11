@@ -14,6 +14,7 @@ import useAuthUser from "@/app/hooks/useAuthUser";
 import { useRouter } from "next/navigation";
 import useTranslation from "@/app/hooks/useTranslations";
 import { getLocalizedText } from "@/lib/getLocalizedText";
+import getValidImage from "@/lib/getValidImage";
 
 export default function AboutPage() {
   const [post, setPost] = useState(null);
@@ -98,7 +99,7 @@ export default function AboutPage() {
       {post.image && (
         <div className="flex justify-center mt-6 mb-10">
           <Image
-            src={post.image}
+            src={getValidImage(post?.image)}
             alt={getLocalizedText(post.title, language, t.defaultTitle)}
             width={750}
             height={420}
@@ -134,7 +135,7 @@ export default function AboutPage() {
 
             {section.image && (
               <Image
-                src={section.image}
+                src={getValidImage(section?.image)}
                 alt={getLocalizedText(
                   section.subtitle,
                   language,

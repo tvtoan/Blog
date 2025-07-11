@@ -16,13 +16,15 @@ import DividerIcon from "@/components/DividerIcon";
 import Image from "next/image";
 import CommentSection from "@/components/CommentSection";
 import { montserrat } from "../../../lib/font";
-import { getLocalizedText } from "@/lib/getLocalizedText"; // ✅ Hàm lấy văn bản theo ngôn ngữ
+import { getLocalizedText } from "@/lib/getLocalizedText";
 import { useLanguage } from "@/app/context/LanguageContext";
+import getValidImage from "@/lib/getValidImage";
 
 const DEFAULT_AVATAR = "/cv.jpg";
+const DEFAULT_IMAGE = "/default-image.jpg";
 
 export default function Post() {
-  const { language } = useLanguage(); // ✅ Lấy ngôn ngữ từ context
+  const { language } = useLanguage();
   const [post, setPost] = useState(null);
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
@@ -121,15 +123,13 @@ export default function Post() {
         </div>
       </div>
 
-      {post.image && (
-        <Image
-          src={post.image}
-          alt={getLocalizedText(post.title, language)}
-          width={750}
-          height={420}
-          className="object-cover rounded-lg mb-4"
-        />
-      )}
+      <Image
+        src={getValidImage(post.image)}
+        alt={getLocalizedText(post.title, language)}
+        width={750}
+        height={420}
+        className="object-cover rounded-lg mb-4"
+      />
 
       <p className="text-[16px] mt-10 mb-14">
         {getLocalizedText(post.excerpt, language, "No excerpt available.")}
@@ -148,15 +148,13 @@ export default function Post() {
                 "No content available."
               )}
             </p>
-            {section.image && (
-              <img
-                src={section.image}
-                alt={getLocalizedText(section.subtitle, language)}
-                width={750}
-                height={420}
-                className="object-cover rounded-lg mb-14 mt-8"
-              />
-            )}
+            <Image
+              src={getValidImage(section.image)}
+              alt={getLocalizedText(section.subtitle, language)}
+              width={750}
+              height={420}
+              className="object-cover rounded-lg mb-14 mt-8"
+            />
           </div>
         ))}
       </div>
@@ -176,9 +174,11 @@ export default function Post() {
 
       <div className="flex items-start justify-between gap-4 pb-6 mb-[100px]">
         <div className="w-[100px] h-[100px] rounded-full overflow-hidden shrink-0">
-          <img
-            src={post.owner?.avatar || DEFAULT_AVATAR}
+          <Image
+            src={getValidImage(post.owner?.avatar)}
             alt={getLocalizedText(post.owner?.name, language, "Unknown")}
+            width={100}
+            height={100}
             className="w-full h-full object-cover"
           />
         </div>

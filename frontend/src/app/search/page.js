@@ -9,6 +9,7 @@ import { FaArrowRight } from "react-icons/fa6";
 import { getPostByTitle } from "@/app/services/postService";
 import useTranslation from "@/app/hooks/useTranslations";
 import { getLocalizedText } from "@/lib/getLocalizedText";
+import getValidImage from "@/lib/getValidImage";
 
 export default function SearchResultPage() {
   const searchParams = useSearchParams();
@@ -95,7 +96,7 @@ export default function SearchResultPage() {
                 </div>
               </div>
               <Image
-                src={post.image}
+                src={getValidImage(post?.image)}
                 alt={getLocalizedText(post.title, translations.language)}
                 width={800}
                 height={600}
