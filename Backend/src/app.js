@@ -9,7 +9,7 @@ import connectDB from "./config/db.js";
 import postRoutes from "./routes/post.js";
 import commentRoutes from "./routes/comment.js";
 import authRoutes from "./routes/auth.js";
-import aboutMeRoutes from "./routes/aboutme.js";
+import aboutMeRoutes from "./routes/aboutMe.js";
 
 dotenv.config();
 const app = express();

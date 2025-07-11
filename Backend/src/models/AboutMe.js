@@ -25,6 +25,7 @@ const aboutMeSchema = new mongoose.Schema(
         image: String,
       },
     ],
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     type: { type: String, default: "page" },
   },
   { timestamps: true }
