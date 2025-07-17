@@ -64,6 +64,7 @@ export const createPost = async (req, res) => {
     sections: Array.isArray(sections) ? sections : [],
     readingTime,
     owner: req.user._id,
+    isDraft: false,
   });
 
   await post.save();
@@ -127,5 +128,68 @@ export const getPostByTitle = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error fetching posts", error: err.message });
+  }
+};
+
+export const saveDraft = async (req, res) => {
+  const {
+    _id, // nếu có thì cập nhật, không có thì tạo mới
+    title,
+    excerpt,
+    image,
+    categories,
+    sections,
+    readingTime,
+  } = req.body;
+
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ message: "Only admins can save drafts" });
+  }
+
+  const postData = {
+    title,
+    excerpt,
+    image,
+    categories: Array.isArray(categories) ? categories : [],
+    sections: Array.isArray(sections) ? sections : [],
+    readingTime,
+    owner: req.user._id,
+    isDraft: true,
+  };
+
+  try {
+    let draft;
+    if (_id) {
+      draft = await Post.findOneAndUpdate(
+        { _id, owner: req.user._id },
+        postData,
+        { new: true, upsert: true }
+      );
+    } else {
+      draft = new Post(postData);
+      await draft.save();
+    }
+
+    res.status(200).json(draft);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Lỗi khi lưu bản nháp", error: err.message });
+  }
+};
+
+export const getDraft = async (req, res) => {
+  try {
+    const draft = await Post.findOne({
+      owner: req.user._id,
+      isDraft: true,
+    }).sort({ updatedAt: -1 });
+    if (!draft)
+      return res.status(404).json({ message: "Không có bản nháp nào" });
+    res.json(draft);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Lỗi khi lấy bản nháp", error: err.message });
   }
 };
