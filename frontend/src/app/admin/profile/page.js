@@ -57,7 +57,7 @@ export default function EditAdminPage() {
     try {
       await updateAdmin(form);
       await fetchAdmin();
-      alert(t.success);
+      alert(t.success || "Cập nhật thành công!");
     } catch (error) {
       console.error("Failed to update admin:", error);
       alert(t.error + (error.message || ""));
@@ -65,17 +65,23 @@ export default function EditAdminPage() {
   };
 
   if (loading) {
-    return <div className="p-4 text-center text-yellow-600">{t.loading}</div>;
+    return (
+      <div className="p-6 text-center text-yellow-600 animate-pulse">
+        {t.loading || "Đang tải..."}
+      </div>
+    );
   }
 
   return (
-    <div className="p-6 max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6 text-[#cfac1e]">{t.title}</h1>
+    <div className="p-6 md:p-8 bg-white rounded-xl shadow-md max-w-2xl mx-auto my-10 w-full">
+      <h1 className="text-2xl md:text-3xl font-bold text-yellow-600 mb-6 text-center uppercase tracking-wider">
+        {t.title || "Chỉnh sửa thông tin Admin"}
+      </h1>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Tên Admin */}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Admin Name */}
         <div>
-          <label className="block mb-1 font-medium text-[#cfac1e]">
+          <label className="block mb-1 text-sm font-medium text-gray-700">
             {t.name}
           </label>
           <input
@@ -83,57 +89,62 @@ export default function EditAdminPage() {
             name="name"
             value={form.name}
             onChange={handleChange}
-            className="w-full p-3 border rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#cfac1e]"
+            className="w-full px-4 py-3 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+            placeholder="VD: Nguyễn Văn A"
           />
         </div>
 
-        {/* Tiểu sử (Bio) */}
+        {/* Bio */}
         <div>
-          <label className="block mb-1 font-medium text-[#cfac1e]">
+          <label className="block mb-1 text-sm font-medium text-gray-700">
             {t.bio_vi}
           </label>
           <input
             type="text"
             value={form.bio.vi}
             onChange={(e) => handleNestedChange("bio", "vi", e.target.value)}
-            className="w-full p-3 border rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#cfac1e]"
+            className="w-full px-4 py-3 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+            placeholder="Mô tả bằng tiếng Việt"
           />
-          <label className="block mt-2 mb-1 font-medium text-[#cfac1e]">
+          <label className="block mt-4 mb-1 text-sm font-medium text-gray-700">
             {t.bio_jp}
           </label>
           <input
             type="text"
             value={form.bio.jp}
             onChange={(e) => handleNestedChange("bio", "jp", e.target.value)}
-            className="w-full p-3 border rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#cfac1e]"
+            className="w-full px-4 py-3 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+            placeholder="日本語の自己紹介"
           />
         </div>
 
-        {/* Công việc (Job) */}
+        {/* Job */}
         <div>
-          <label className="block mb-1 font-medium text-[#cfac1e]">
+          <label className="block mb-1 text-sm font-medium text-gray-700">
             {t.job_vi}
           </label>
           <input
             type="text"
             value={form.job.vi}
             onChange={(e) => handleNestedChange("job", "vi", e.target.value)}
-            className="w-full p-3 border rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#cfac1e]"
+            className="w-full px-4 py-3 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+            placeholder="Chức vụ tiếng Việt"
           />
-          <label className="block mt-2 mb-1 font-medium text-[#cfac1e]">
+          <label className="block mt-4 mb-1 text-sm font-medium text-gray-700">
             {t.job_jp}
           </label>
           <input
             type="text"
             value={form.job.jp}
             onChange={(e) => handleNestedChange("job", "jp", e.target.value)}
-            className="w-full p-3 border rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#cfac1e]"
+            className="w-full px-4 py-3 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+            placeholder="役職名（日本語）"
           />
         </div>
 
-        {/* Ảnh đại diện */}
+        {/* Avatar */}
         <div>
-          <label className="block mb-1 font-medium text-[#cfac1e]">
+          <label className="block mb-1 text-sm font-medium text-gray-700">
             {t.avatar}
           </label>
           <input
@@ -141,16 +152,17 @@ export default function EditAdminPage() {
             name="avatar"
             value={form.avatar}
             onChange={handleChange}
-            className="w-full p-3 border rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#cfac1e]"
+            className="w-full px-4 py-3 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+            placeholder="URL hình đại diện"
           />
         </div>
 
         <div className="text-right">
           <button
             type="submit"
-            className="bg-[#cfac1e] text-white font-semibold px-6 py-3 rounded hover:bg-[#b89514] transition"
+            className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-6 py-3 rounded-lg transition shadow-sm"
           >
-            {t.save}
+            {t.save || "Lưu thay đổi"}
           </button>
         </div>
       </form>

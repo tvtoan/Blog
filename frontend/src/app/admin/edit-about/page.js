@@ -120,75 +120,106 @@ export default function EditAboutPage() {
     return <p className="text-center mt-10 text-red-600">{t.noAccess}</p>;
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10">
-      <h1 className="text-2xl font-bold mb-6 text-[#cfac1e]">{t.editTitle}</h1>
+    <div className="max-w-5xl mx-auto px-6 py-12 space-y-8">
+      <h1 className="text-3xl font-bold text-[#cfac1e] text-center">
+        {t.editTitle}
+      </h1>
 
-      <div className="space-y-5">
+      {/* Title & Excerpt */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white shadow-lg p-6 rounded-xl border">
         <div>
-          <label className="font-semibold">{t.placeholderTitle}</label>
+          <label className="block font-medium text-gray-700 mb-2">
+            {t.placeholderTitle}
+          </label>
           <input
-            className="border p-3 rounded w-full mb-2"
+            className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#cfac1e]"
             value={form.title.vi}
             onChange={(e) => handleFieldChange("title", "vi", e.target.value)}
           />
-          <label className="font-semibold">{t.placeholderTitle_1}</label>
+        </div>
+        <div>
+          <label className="block font-medium text-gray-700 mb-2">
+            {t.placeholderTitle_1}
+          </label>
           <input
-            className="border p-3 rounded w-full"
+            className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#cfac1e]"
             value={form.title.jp}
             onChange={(e) => handleFieldChange("title", "jp", e.target.value)}
           />
         </div>
-
         <div>
-          <label className="font-semibold">{t.placeholderExcerpt}</label>
+          <label className="block font-medium text-gray-700 mb-2">
+            {t.placeholderExcerpt}
+          </label>
           <textarea
-            className="border p-3 rounded w-full mb-2"
+            rows={3}
+            className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#cfac1e]"
             value={form.excerpt.vi}
             onChange={(e) => handleFieldChange("excerpt", "vi", e.target.value)}
           />
-          <label className="font-semibold">{t.placeholderExcerpt_1}</label>
+        </div>
+        <div>
+          <label className="block font-medium text-gray-700 mb-2">
+            {t.placeholderExcerpt_1}
+          </label>
           <textarea
-            className="border p-3 rounded w-full"
+            rows={3}
+            className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#cfac1e]"
             value={form.excerpt.jp}
             onChange={(e) => handleFieldChange("excerpt", "jp", e.target.value)}
           />
         </div>
+      </div>
 
-        <div>
-          <label className="font-semibold">{t.placeholderImage}</label>
-          <input
-            className="border p-3 rounded w-full"
-            value={form.image}
-            onChange={(e) => handleChange("image", e.target.value)}
+      {/* Main Image */}
+      <div className="bg-white shadow-lg p-6 rounded-xl border space-y-3">
+        <label className="block font-medium text-gray-700">
+          {t.placeholderImage}
+        </label>
+        <input
+          className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#cfac1e]"
+          value={form.image}
+          onChange={(e) => handleChange("image", e.target.value)}
+        />
+        {form.image && (
+          <img
+            src={form.image}
+            alt="Cover"
+            className="mt-2 rounded-lg border max-w-sm shadow"
           />
-          {form.image && (
-            <img
-              src={form.image}
-              alt="Cover"
-              className="mt-2 rounded border max-w-xs"
-            />
-          )}
-        </div>
+        )}
+      </div>
 
-        <div className="space-y-6">
-          <h2 className="text-lg font-semibold">{t.sectionHeading}</h2>
-          {form.sections.map((sec, index) => (
-            <div
-              key={index}
-              className="p-4 bg-gray-50 border border-gray-300 rounded space-y-2"
-            >
+      {/* Sections */}
+      <div className="space-y-6">
+        <h2 className="text-xl font-semibold text-gray-800">
+          {t.sectionHeading}
+        </h2>
+
+        {form.sections.map((sec, index) => (
+          <div
+            key={index}
+            className="bg-white p-6 rounded-xl border shadow-md space-y-4"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="font-semibold">{t.sectionTitle}</label>
+                <label className="block font-medium text-gray-700 mb-2">
+                  {t.sectionTitle}
+                </label>
                 <input
-                  className="border p-2 mb-2 w-full rounded"
+                  className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#cfac1e]"
                   value={sec.subtitle.vi}
                   onChange={(e) =>
                     handleSectionChange(index, "subtitle", "vi", e.target.value)
                   }
                 />
-                <label className="font-semibold">{t.sectionTitle_1}</label>
+              </div>
+              <div>
+                <label className="block font-medium text-gray-700 mb-2">
+                  {t.sectionTitle_1}
+                </label>
                 <input
-                  className="border p-2 w-full rounded"
+                  className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#cfac1e]"
                   value={sec.subtitle.jp}
                   onChange={(e) =>
                     handleSectionChange(index, "subtitle", "jp", e.target.value)
@@ -196,62 +227,72 @@ export default function EditAboutPage() {
                 />
               </div>
               <div>
-                <label className="font-semibold">{t.sectionContent}</label>
+                <label className="block font-medium text-gray-700 mb-2">
+                  {t.sectionContent}
+                </label>
                 <textarea
-                  className="border p-2 mb-2 w-full rounded"
-                  rows={3}
+                  rows={4}
+                  className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#cfac1e]"
                   value={sec.content.vi}
                   onChange={(e) =>
                     handleSectionChange(index, "content", "vi", e.target.value)
                   }
                 />
-                <label className="font-semibold">{t.sectionContent_1}</label>
+              </div>
+              <div>
+                <label className="block font-medium text-gray-700 mb-2">
+                  {t.sectionContent_1}
+                </label>
                 <textarea
-                  className="border p-2 w-full rounded"
-                  rows={3}
+                  rows={4}
+                  className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#cfac1e]"
                   value={sec.content.jp}
                   onChange={(e) =>
                     handleSectionChange(index, "content", "jp", e.target.value)
                   }
                 />
               </div>
-              <div>
-                <label className="font-semibold">{t.sectionImage}</label>
-                <input
-                  className="border p-2 w-full rounded"
-                  value={sec.image}
-                  onChange={(e) =>
-                    handleSectionChange(index, "image", null, e.target.value)
-                  }
-                />
-                {sec.image && (
-                  <img
-                    src={sec.image}
-                    alt="Section"
-                    className="mt-2 rounded border max-w-xs"
-                  />
-                )}
-              </div>
             </div>
-          ))}
-          <button
-            onClick={handleAddSection}
-            type="button"
-            className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-900"
-          >
-            {t.addSection}
-          </button>
-        </div>
+            <div>
+              <label className="block font-medium text-gray-700 mb-2">
+                {t.sectionImage}
+              </label>
+              <input
+                className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#cfac1e]"
+                value={sec.image}
+                onChange={(e) =>
+                  handleSectionChange(index, "image", null, e.target.value)
+                }
+              />
+              {sec.image && (
+                <img
+                  src={sec.image}
+                  alt="Section"
+                  className="mt-2 rounded-lg border max-w-sm shadow"
+                />
+              )}
+            </div>
+          </div>
+        ))}
 
-        <div className="text-right pt-4">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="bg-[#cfac1e] text-white font-semibold px-6 py-2 rounded hover:bg-[#b89514] disabled:opacity-50"
-          >
-            {saving ? t.saving : t.save}
-          </button>
-        </div>
+        <button
+          onClick={handleAddSection}
+          type="button"
+          className="px-5 py-3 bg-gray-700 text-white font-medium rounded-lg hover:bg-gray-900 transition"
+        >
+          {t.addSection}
+        </button>
+      </div>
+
+      {/* Save button */}
+      <div className="text-center pt-6">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="bg-[#cfac1e] text-white text-lg font-semibold px-8 py-3 rounded-lg hover:bg-[#b89514] transition disabled:opacity-50"
+        >
+          {saving ? t.saving : t.save}
+        </button>
       </div>
     </div>
   );

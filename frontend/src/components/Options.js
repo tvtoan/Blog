@@ -1,97 +1,90 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { IoMenuOutline } from "react-icons/io5";
 import Link from "next/link";
-import useAuthUser from "@/app/hooks/useAuthUser"; // 👈 import hook của bạn
-import { SiAwssecretsmanager } from "react-icons/si";
-import { FaRegAddressBook } from "react-icons/fa6";
-import { IoSettingsOutline } from "react-icons/io5";
-import { BsFileEarmarkPostFill } from "react-icons/bs";
+import { IoClose } from "react-icons/io5";
+import {
+  MdPostAdd,
+  MdDashboard,
+  MdInfoOutline,
+  MdPeople,
+  MdAccountCircle,
+} from "react-icons/md";
 import useTranslation from "@/app/hooks/useTranslations";
 
-export default function AdminToolButton() {
-  const { user, loading } = useAuthUser(); // 👈 lấy user & loading
-  const [menuOpen, setMenuOpen] = useState(false);
-  const timerRef = useRef(null);
-  const containerRef = useRef(null);
+export default function AdminSidebar({
+  showAdminSidebar,
+  setShowAdminSidebar,
+}) {
   const translations = useTranslation();
   const t = translations?.Options || {};
-
-  const closeMenu = () => setMenuOpen(false);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target)
-      ) {
-        closeMenu();
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  const handleMouseLeave = () => {
-    timerRef.current = setTimeout(() => {
-      closeMenu();
-    }, 2000);
-  };
-
-  const handleMouseEnter = () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-  };
-
-  // 👇 Không phải admin thì không render gì cả
-  if (loading || user?.role !== "admin") return null;
-
   return (
-    <div
-      ref={containerRef}
-      className="fixed top-1/2 left-4 transform -translate-y-1/2 z-50 flex items-center"
-      onMouseLeave={handleMouseLeave}
-      onMouseEnter={handleMouseEnter}
-    >
-      <button
-        onClick={() => setMenuOpen(!menuOpen)}
-        className="bg-gray-400 text-white p-2 rounded-full shadow-lg hover:bg-gray-300"
-        aria-label="Admin Tools"
-      >
-        <IoMenuOutline size={20} />
-      </button>
+    <>
+      {showAdminSidebar && (
+        <div className="fixed top-15 left-0 h-auto w-64 bg-white  z-[1000] border-r border-gray-200 px-6 py-8 transition-transform duration-300 ease-in-out transform translate-x-0">
+          {/* Close Button */}
+          <div className="absolute top-4 right-4">
+            <button
+              onClick={() => setShowAdminSidebar(false)}
+              className="text-gray-500 hover:text-red-500 transition"
+            >
+              <IoClose size={24} />
+            </button>
+          </div>
 
-      {menuOpen && (
-        <div className="ml-4 bg-white border rounded shadow-lg p-4 space-y-3 text-sm text-gray-700 w-52">
-          <Link
-            href="/admin"
-            className=" hover:text-[#cfac1e] flex text-center items-center gap-2"
-          >
-            <BsFileEarmarkPostFill /> {t.post}
-          </Link>
-          <Link
-            href="/admin/edit-about"
-            className=" hover:text-[#cfac1e] flex text-center items-center gap-2"
-          >
-            <SiAwssecretsmanager /> {t.about}
-          </Link>
-          <Link
-            href="/admin/users-list"
-            className=" hover:text-[#cfac1e] flex text-center items-center gap-2"
-          >
-            <FaRegAddressBook /> {t.users}
-          </Link>
-          <Link
-            href="/admin/profile"
-            className=" hover:text-[#cfac1e] flex text-center items-center gap-2"
-          >
-            <IoSettingsOutline /> {t.admin}
-          </Link>
+          {/* Title */}
+          <h2 className="text-2xl font-bold text-gray-800 mb-8">
+            Quản trị Admin
+          </h2>
+
+          {/* Links */}
+          <nav className="space-y-4">
+            <SidebarLink
+              href="/admin"
+              label={t.post}
+              icon={<MdDashboard />}
+              onClick={setShowAdminSidebar}
+            />
+            <SidebarLink
+              href="/admin/create-post"
+              label={t.createPost}
+              icon={<MdPostAdd />}
+              onClick={setShowAdminSidebar}
+            />
+            <SidebarLink
+              href="/admin/edit-about"
+              label={t.about}
+              icon={<MdInfoOutline />}
+              onClick={setShowAdminSidebar}
+            />
+            <SidebarLink
+              href="/admin/users-list"
+              label={t.users}
+              icon={<MdPeople />}
+              onClick={setShowAdminSidebar}
+            />
+            <SidebarLink
+              href="/admin/profile"
+              label={t.admin}
+              icon={<MdAccountCircle />}
+              onClick={setShowAdminSidebar}
+            />
+          </nav>
         </div>
       )}
-    </div>
+    </>
+  );
+}
+
+// Sub-component for links
+function SidebarLink({ href, label, icon, onClick }) {
+  return (
+    <Link
+      href={href}
+      onClick={() => onClick(false)}
+      className="flex items-center gap-3 text-sm text-gray-700 hover:text-[#cfac1e] transition"
+    >
+      <span className="text-lg">{icon}</span>
+      <span>{label}</span>
+    </Link>
   );
 }

@@ -18,10 +18,8 @@ const Title = () => {
         </Link>
       </h1>
       <DividerIcon size={300} />
-      <p className="text-[14px] mb-3 text-black font-[600]">
-        THE HANOI CHAMOMILE
-      </p>
-      <div className="flex justify-center space-x-4 mb-8">
+
+      <div className="flex justify-center space-x-4 mb-8 mt-4">
         <a
           href="https://facebook.com"
           target="_blank"

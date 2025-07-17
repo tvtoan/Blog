@@ -6,15 +6,18 @@ import { deletePost, getPosts } from "@/app/services/postService";
 import { getComments } from "@/app/services/commentService";
 import useAuthUser from "@/app/hooks/useAuthUser";
 import { getLocalizedText } from "@/lib/getLocalizedText";
-import CreatePost from "@/components/CreatePost";
 import useTranslation from "@/app/hooks/useTranslations";
 
 export default function AdminPostPage() {
   const router = useRouter();
   const { user, loading } = useAuthUser();
   const [posts, setPosts] = useState([]);
+  const [filteredPosts, setFilteredPosts] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(10);
   const [commentCounts, setCommentCounts] = useState({});
   const [fetching, setFetching] = useState(true);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const translations = useTranslation();
   const t = translations.AdminPost;
@@ -23,6 +26,7 @@ export default function AdminPostPage() {
     try {
       const data = await getPosts();
       setPosts(data);
+      setFilteredPosts(data);
       fetchAllComments(data);
     } catch (error) {
       alert(error.message);
@@ -71,11 +75,20 @@ export default function AdminPostPage() {
     return count;
   };
 
-  useEffect(() => {
-    if (!loading && user?.role === "admin") {
-      fetchPosts();
-    }
-  }, [loading, user]);
+  const handleFilter = () => {
+    const from = startDate ? new Date(startDate) : null;
+    const to = endDate ? new Date(endDate) : null;
+
+    const filtered = posts.filter((post) => {
+      const createdAt = new Date(post.createdAt);
+      if (from && createdAt < from) return false;
+      if (to && createdAt > to) return false;
+      return true;
+    });
+
+    setFilteredPosts(filtered);
+    setVisibleCount(10);
+  };
 
   const handleDelete = async (id) => {
     if (!confirm(t.confirmDelete)) return;
@@ -87,8 +100,16 @@ export default function AdminPostPage() {
     }
   };
 
+  useEffect(() => {
+    if (!loading && user?.role === "admin") {
+      fetchPosts();
+    }
+  }, [loading, user]);
+
   if (loading || fetching) {
-    return <p className="text-center mt-10">{t.loading}</p>;
+    return (
+      <p className="text-center mt-10 text-lg text-gray-500">{t.loading}</p>
+    );
   }
 
   if (!user || user.role !== "admin") {
@@ -96,26 +117,68 @@ export default function AdminPostPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10">
-      <h1 className="text-3xl font-bold text-[#cfac1e] mb-10">
+    <div className="max-w-5xl mx-auto px-4 py-10">
+      <h1 className="text-4xl font-bold text-yellow-600 mb-8 text-center">
         {t.managePosts}
       </h1>
 
-      <div className="bg-white border-none md:border md:border-gray-200 p-0 md:p-6 rounded-xl shadow-sm mb-12 w-auto md:w-full">
-        <CreatePost t={t} onPostCreated={fetchPosts} />
+      {/* Bộ lọc ngày */}
+      <div className="bg-white p-6 rounded-lg shadow mb-8 flex flex-col md:flex-row gap-4 md:items-end justify-between">
+        <div className="flex flex-col gap-2 w-full md:w-auto">
+          <label className="text-sm font-medium text-gray-700">
+            {t.startDate || "Từ ngày"}
+          </label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="border border-gray-300 px-3 py-2 rounded-md shadow-sm"
+          />
+        </div>
+        <div className="flex flex-col gap-2 w-full md:w-auto">
+          <label className="text-sm font-medium text-gray-700">
+            {t.endDate || "Đến ngày"}
+          </label>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="border border-gray-300 px-3 py-2 rounded-md shadow-sm"
+          />
+        </div>
+        <div className="flex gap-2 mt-4 md:mt-0">
+          <button
+            onClick={handleFilter}
+            className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition shadow"
+          >
+            🔍 {t.filter || "Lọc"}
+          </button>
+          <button
+            onClick={() => {
+              setStartDate("");
+              setEndDate("");
+              setFilteredPosts(posts);
+              setVisibleCount(10);
+            }}
+            className="text-gray-500 text-sm underline hover:text-gray-800 transition"
+          >
+            ❌ {t.clear || "Xóa lọc"}
+          </button>
+        </div>
       </div>
 
+      {/* Danh sách bài viết */}
       <div className="space-y-4">
-        {posts.map((post) => (
+        {filteredPosts.slice(0, visibleCount).map((post) => (
           <div
             key={post._id}
-            className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm flex flex-col md:flex-row md:items-center md:justify-between"
+            className="bg-white p-6 rounded-xl shadow border hover:border-yellow-500 transition"
           >
             <div
-              className="mb-4 md:mb-0 cursor-pointer"
+              className="cursor-pointer"
               onClick={() => router.push(`/posts/${post._id}`)}
             >
-              <h3 className="text-lg font-semibold text-[#222] hover:text-[#cfac1e]">
+              <h3 className="text-xl font-semibold text-gray-800 hover:text-yellow-600 transition">
                 {getLocalizedText(
                   post.title,
                   translations.language,
@@ -129,12 +192,12 @@ export default function AdminPostPage() {
                   "No Excerpt"
                 )}
               </p>
-              <p className="text-xs text-gray-500 mt-2">
-                {commentCounts[post._id] ?? 0} {t.comments} | {post.readingTime}{" "}
+              <p className="text-xs text-gray-400 mt-2">
+                {commentCounts[post._id] ?? 0} {t.comments} • {post.readingTime}{" "}
                 {t.minutes}
               </p>
             </div>
-            <div className="space-x-4 flex-shrink-0">
+            <div className="mt-4 flex gap-4">
               <button
                 className="text-blue-600 hover:underline"
                 onClick={() => router.push(`/admin/edit-post/${post._id}`)}
@@ -151,6 +214,18 @@ export default function AdminPostPage() {
           </div>
         ))}
       </div>
+
+      {/* Nút hiển thị thêm */}
+      {visibleCount < filteredPosts.length && (
+        <div className="text-center mt-10">
+          <button
+            className="text-yellow-600 font-semibold hover:underline"
+            onClick={() => setVisibleCount((prev) => prev + 10)}
+          >
+            ⬇ {t.oldPosts || "Old Posts"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

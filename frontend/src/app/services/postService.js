@@ -63,3 +63,23 @@ export const getPostByTitle = async (title) => {
     );
   }
 };
+
+//  Lưu bản nháp
+export const saveDraft = async (draftData) => {
+  try {
+    const response = await api.post("/post/draft", draftData);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "Failed to save draft");
+  }
+};
+
+//  Lấy bản nháp gần nhất của người dùng
+export const getMyDraft = async () => {
+  try {
+    const response = await api.get("/post/draft/me");
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "Failed to fetch draft");
+  }
+};

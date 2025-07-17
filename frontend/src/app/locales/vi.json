@@ -39,8 +39,8 @@
   "Sidebar": {
     "search": "Tìm kiếm...",
     "about": "GIỚI THIỆU",
-    "archives": "LƯU TRỮ",
-    "categories": "CHUYÊN MỤC",
+    "archives": "ARCHIVES",
+    "categories": "CATEGORIES",
     "loading": "Đang tải...",
     "noAdmin": "Không có thông tin admin.",
     "noPosts": "Chưa có bài viết.",
@@ -145,6 +145,7 @@
   },
   "Options": {
     "post": "Quản lý bài viết",
+    "createPost": "Tạo bài viết mới",
     "about": "Quản lý About Me",
     "users": "Quản lý người dùng",
     "admin": "Quản lý thông tin Admin"

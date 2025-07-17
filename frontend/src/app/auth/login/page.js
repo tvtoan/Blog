@@ -6,44 +6,42 @@ import {
   loginWithFacebook,
 } from "@/app/services/authService";
 import useTranslation from "@/app/hooks/useTranslations";
+import { FaGoogle, FaGithub, FaFacebookF } from "react-icons/fa";
 
 export default function Login() {
   const translations = useTranslation();
   const t = translations?.Login || {};
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f9f6f1] px-4">
-      <div className="w-full max-w-md bg-white border border-[#e1c680] p-8 rounded-lg shadow-md">
-        <h1 className="text-2xl font-semibold text-[#585656] text-center mb-6">
-          {t.title}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#fef9e7] to-[#f9f6f1] px-4">
+      <div className="w-full max-w-md bg-white border border-[#e1c680] p-10 rounded-2xl shadow-xl">
+        <h1 className="text-3xl font-bold text-[#585656] text-center mb-8 tracking-wide">
+          {t.title || "Welcome Back"}
         </h1>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-5">
           <button
-            onClick={() => {
-              console.log("Initiating Google login");
-              loginWithGoogle();
-            }}
-            className="bg-white text-[#585656] border border-[#e1c680] px-4 py-2 rounded hover:bg-[#f9f6f1] transition"
+            onClick={loginWithGoogle}
+            className="flex items-center cursor-pointer justify-center gap-3 bg-white text-[#585656] border border-[#e1c680] px-6 py-3 rounded-xl hover:bg-[#f9f6f1] transition-all duration-300 shadow-sm hover:shadow-md"
           >
-            {t.loginWithGoogle}
+            <FaGoogle className="text-xl" />
+            {t.loginGoogle || "Login with Google"}
           </button>
+
           <button
-            onClick={() => {
-              console.log("Initiating GitHub login");
-              loginWithGitHub();
-            }}
-            className="bg-[#585656] text-white px-4 py-2 rounded hover:bg-[#464646] transition"
+            onClick={loginWithGitHub}
+            className="flex items-center cursor-pointer justify-center gap-3 bg-[#24292f] text-white px-6 py-3 rounded-xl hover:bg-[#1b1f23] transition-all duration-300 shadow-sm hover:shadow-md"
           >
-            {t.loginWithGitHub}
+            <FaGithub className="text-xl" />
+            {t.loginGitHub || "Login with GitHub"}
           </button>
+
           <button
-            onClick={() => {
-              console.log("Initiating Facebook login");
-              loginWithFacebook();
-            }}
-            className="bg-[#e1c680] text-[#585656] px-4 py-2 rounded hover:bg-[#d6b85c] transition"
+            onClick={loginWithFacebook}
+            className="flex items-center cursor-pointer justify-center gap-3 bg-[#1877f2] text-white px-6 py-3 rounded-xl hover:bg-[#145ec6] transition-all duration-300 shadow-sm hover:shadow-md"
           >
-            {t.loginWithFacebook}
+            <FaFacebookF className="text-xl" />
+            {t.loginFacebook || "Login with Facebook"}
           </button>
         </div>
       </div>
