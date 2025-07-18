@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { updateAdmin } from "@/app/services/authService";
 import { useAdmin } from "@/app/context/AdminContext";
 import useTranslation from "@/app/hooks/useTranslations";
+import TextareaAutosize from "react-textarea-autosize";
 
 export default function EditAdminPage() {
   const [form, setForm] = useState({
@@ -99,21 +100,22 @@ export default function EditAdminPage() {
           <label className="block mb-1 text-sm font-medium text-gray-700">
             {t.bio_vi}
           </label>
-          <input
-            type="text"
+          <TextareaAutosize
+            minRows={2}
             value={form.bio.vi}
             onChange={(e) => handleNestedChange("bio", "vi", e.target.value)}
-            className="w-full px-4 py-3 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+            className="w-full px-4 py-3 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition resize-none"
             placeholder="Mô tả bằng tiếng Việt"
           />
+
           <label className="block mt-4 mb-1 text-sm font-medium text-gray-700">
             {t.bio_jp}
           </label>
-          <input
-            type="text"
+          <TextareaAutosize
+            minRows={2}
             value={form.bio.jp}
             onChange={(e) => handleNestedChange("bio", "jp", e.target.value)}
-            className="w-full px-4 py-3 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+            className="w-full px-4 py-3 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition resize-none"
             placeholder="日本語の自己紹介"
           />
         </div>

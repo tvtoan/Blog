@@ -125,7 +125,7 @@ const Sidebar = () => {
         ) : admin ? (
           <div className="text-left">
             <img
-              src={admin.avatar || "/default-avatar.jpg"}
+              src={admin.avatar || "/hviet.jpg"}
               alt={admin.name}
               className="w-full h-auto object-cover mb-4 rounded"
             />

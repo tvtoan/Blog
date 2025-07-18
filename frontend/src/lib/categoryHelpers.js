@@ -1,13 +1,20 @@
 import { slugifyCategory } from "./slugifyCategory";
-import { postsData } from "../data";
+import { getPosts } from "@/app/services/postService";
 
-export function getOriginalCategoryFromSlug(slug) {
-  for (const post of postsData) {
-    for (const category of post.categories) {
-      if (slugifyCategory(category) === slug) {
-        return category;
+export async function getOriginalCategoryFromSlug(slug) {
+  try {
+    const decodedSlug = decodeURIComponent(slug); // ✅ giải mã
+    const posts = await getPosts();
+    for (const post of posts) {
+      for (const category of post.categories || []) {
+        if (slugifyCategory(category) === decodedSlug) {
+          return category;
+        }
       }
     }
+    return decodedSlug;
+  } catch (err) {
+    console.error("Lỗi khi lấy category gốc:", err);
+    return slug;
   }
-  return slug; // fallback nếu không tìm thấy
 }

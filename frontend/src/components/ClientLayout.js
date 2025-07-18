@@ -12,7 +12,8 @@ import { useState } from "react";
 
 export default function ClientLayout({ children }) {
   const pathname = usePathname();
-  const isAdminPage = pathname.startsWith("/admin");
+  const isAdminPage =
+    pathname.startsWith("/admin") || pathname.startsWith("/auth");
   const [showAdminSidebar, setShowAdminSidebar] = useState(false);
 
   return (

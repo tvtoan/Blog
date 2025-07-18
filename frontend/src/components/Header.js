@@ -8,7 +8,7 @@ import { IoLogoFacebook, IoIosLogIn } from "react-icons/io";
 import { ImInstagram } from "react-icons/im";
 import { AiFillTikTok } from "react-icons/ai";
 import { MdKeyboardArrowDown } from "react-icons/md";
-
+import { slugifyCategory } from "@/lib/slugifyCategory";
 import { montserrat } from "../lib/font";
 import { getPosts } from "@/app/services/postService";
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -20,6 +20,7 @@ const Header = ({ showAdminSidebar, setShowAdminSidebar }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
   const menuRef = useRef(null);
+  const blogTimeoutRef = useRef(null);
 
   const { language, toggleLanguage } = useLanguage();
   const { user } = useAuthUser();
@@ -61,6 +62,18 @@ const Header = ({ showAdminSidebar, setShowAdminSidebar }) => {
     };
   }, [isMenuOpen]);
 
+  // Handle hover with delay
+  const handleBlogMouseEnter = () => {
+    if (blogTimeoutRef.current) clearTimeout(blogTimeoutRef.current);
+    setIsBlogOpen(true);
+  };
+
+  const handleBlogMouseLeave = () => {
+    blogTimeoutRef.current = setTimeout(() => {
+      setIsBlogOpen(false);
+    }, 1500);
+  };
+
   const t = {
     home: language === "vi" ? "HOME" : "ホーム",
     blog: language === "vi" ? "BLOG" : "ブログ",
@@ -97,8 +110,8 @@ const Header = ({ showAdminSidebar, setShowAdminSidebar }) => {
 
         <div
           className="relative"
-          onMouseEnter={() => setIsBlogOpen(true)}
-          onMouseLeave={() => setIsBlogOpen(false)}
+          onMouseEnter={handleBlogMouseEnter}
+          onMouseLeave={handleBlogMouseLeave}
         >
           <Link
             href="/category"
@@ -116,7 +129,7 @@ const Header = ({ showAdminSidebar, setShowAdminSidebar }) => {
               {t.categories.map((item, index) => (
                 <Link
                   key={index}
-                  href={`/category/${item.toLowerCase().replace(/\s+/g, "-")}`}
+                  href={`/category/${slugifyCategory(item)}`}
                   className="block px-4 py-2 text-[#585656] hover:bg-gray-100 hover:text-[#e1c680] transition-colors"
                 >
                   {item}

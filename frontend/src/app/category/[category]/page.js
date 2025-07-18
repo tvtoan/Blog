@@ -20,20 +20,27 @@ export default function CategoryPage() {
   const [displayCount, setDisplayCount] = useState(8);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [originalCategory, setOriginalCategory] = useState("");
   const translations = useTranslation();
   const t = translations?.Category || {};
 
   useEffect(() => {
-    const fetchPosts = async () => {
+    const fetchData = async () => {
       setLoading(true);
       setError(null);
+
       try {
         const posts = await getPosts();
-        const matched = posts.filter((post) =>
+
+        const matchedPosts = posts.filter((post) =>
           post.categories?.some((cat) => slugifyCategory(cat) === category)
         );
-        setFilteredPosts(matched);
+        setFilteredPosts(matchedPosts);
+
+        const original = await getOriginalCategoryFromSlug(category);
+        setOriginalCategory(original);
       } catch (err) {
+        console.error("Lỗi khi lấy dữ liệu:", err);
         setError(err.message || "Có lỗi xảy ra khi lấy bài viết.");
         setFilteredPosts([]);
       } finally {
@@ -42,10 +49,10 @@ export default function CategoryPage() {
     };
 
     if (category) {
-      fetchPosts();
+      fetchData();
     } else {
-      setLoading(false);
       setError("Danh mục không hợp lệ.");
+      setLoading(false);
     }
   }, [category]);
 
@@ -54,9 +61,6 @@ export default function CategoryPage() {
   };
 
   const displayedPosts = filteredPosts.slice(0, displayCount);
-  const originalCategory = category
-    ? getOriginalCategoryFromSlug(category)
-    : "";
 
   if (loading) {
     return <div className="container mx-auto p-4 text-center">{t.loading}</div>;

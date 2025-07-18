@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getAboutData, updateAboutData } from "@/app/services/aboutService";
 import useAuthUser from "@/app/hooks/useAuthUser";
 import useTranslation from "@/app/hooks/useTranslations";
+import TextareaAutosize from "react-textarea-autosize";
 
 export default function EditAboutPage() {
   const { user, loading } = useAuthUser();
@@ -151,22 +152,22 @@ export default function EditAboutPage() {
           <label className="block font-medium text-gray-700 mb-2">
             {t.placeholderExcerpt}
           </label>
-          <textarea
-            rows={3}
-            className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#cfac1e]"
+          <TextareaAutosize
+            minRows={3}
             value={form.excerpt.vi}
             onChange={(e) => handleFieldChange("excerpt", "vi", e.target.value)}
+            className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#cfac1e] resize-none"
           />
         </div>
         <div>
           <label className="block font-medium text-gray-700 mb-2">
             {t.placeholderExcerpt_1}
           </label>
-          <textarea
-            rows={3}
-            className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#cfac1e]"
+          <TextareaAutosize
+            minRows={3}
             value={form.excerpt.jp}
             onChange={(e) => handleFieldChange("excerpt", "jp", e.target.value)}
+            className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#cfac1e] resize-none"
           />
         </div>
       </div>
@@ -230,26 +231,26 @@ export default function EditAboutPage() {
                 <label className="block font-medium text-gray-700 mb-2">
                   {t.sectionContent}
                 </label>
-                <textarea
-                  rows={4}
-                  className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#cfac1e]"
+                <TextareaAutosize
+                  minRows={4}
                   value={sec.content.vi}
                   onChange={(e) =>
                     handleSectionChange(index, "content", "vi", e.target.value)
                   }
+                  className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#cfac1e] resize-none"
                 />
               </div>
               <div>
                 <label className="block font-medium text-gray-700 mb-2">
                   {t.sectionContent_1}
                 </label>
-                <textarea
-                  rows={4}
-                  className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#cfac1e]"
+                <TextareaAutosize
+                  minRows={4}
                   value={sec.content.jp}
                   onChange={(e) =>
                     handleSectionChange(index, "content", "jp", e.target.value)
                   }
+                  className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#cfac1e] resize-none"
                 />
               </div>
             </div>
