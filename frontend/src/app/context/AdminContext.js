@@ -14,7 +14,6 @@ export const AdminProvider = ({ children }) => {
       const data = await getAdminInfo();
       setAdmin(data);
     } catch (error) {
-      console.error("Lỗi khi lấy thông tin admin:", error);
       setAdmin(null);
     } finally {
       setLoadingAdmin(false);

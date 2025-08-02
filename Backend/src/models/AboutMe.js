@@ -12,19 +12,10 @@ const aboutMeSchema = new mongoose.Schema(
       jp: { type: String },
     },
     image: String,
-    sections: [
-      {
-        subtitle: {
-          vi: { type: String, required: true },
-          jp: { type: String },
-        },
-        content: {
-          vi: { type: String, required: true },
-          jp: { type: String },
-        },
-        image: String,
-      },
-    ],
+    content: {
+      vi: { type: Object, required: true }, // stored as Tiptap JSON format
+      jp: { type: Object },
+    },
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     type: { type: String, default: "page" },
   },

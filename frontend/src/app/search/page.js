@@ -95,7 +95,7 @@ export default function SearchResultPage() {
                   {post.readingTime} {t.readingTime}
                 </div>
               </div>
-              <Image
+              <img
                 src={getValidImage(post?.image)}
                 alt={getLocalizedText(post.title, translations.language)}
                 width={800}

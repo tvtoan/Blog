@@ -35,71 +35,101 @@ export const deletePost = async (req, res) => {
 };
 
 export const createPost = async (req, res) => {
-  const { title, excerpt, image, categories, sections, readingTime } = req.body;
+  const { _id, title, excerpt, image, categories, content, readingTime } =
+    req.body;
 
   if (req.user.role !== "admin") {
     return res.status(403).json({ message: "Only admins can create posts" });
   }
 
-  if (!title?.vi)
-    return res.status(400).json({ message: "Tiêu đề tiếng Việt là bắt buộc." });
-
-  if (!Array.isArray(sections)) {
-    return res.status(400).json({ message: "Sections phải là một mảng." });
+  if (!title?.vi || !content?.vi) {
+    return res
+      .status(400)
+      .json({ message: "Tiêu đề và nội dung tiếng Việt là bắt buộc." });
   }
 
-  for (const section of sections) {
-    if (!section.subtitle?.vi || !section.content?.vi) {
-      return res.status(400).json({
-        message: "Mỗi section cần có subtitle và content tiếng Việt.",
+  let post;
+  if (_id) {
+    // Cập nhật bản nháp thành bài viết chính thức
+    post = await Post.findOneAndUpdate(
+      { _id, owner: req.user._id, isDraft: true },
+      {
+        title,
+        excerpt,
+        image,
+        categories: Array.isArray(categories) ? categories : [],
+        content,
+        readingTime,
+        isDraft: false,
+      },
+      { new: true }
+    );
+    if (!post) {
+      return res
+        .status(404)
+        .json({ message: "Draft not found or unauthorized" });
+    }
+  } else {
+    // Kiểm tra xem có bản nháp nào đang tồn tại không
+    const existingDraft = await Post.findOne({
+      owner: req.user._id,
+      isDraft: true,
+    });
+    if (existingDraft) {
+      // Cập nhật bản nháp hiện có thành bài viết
+      post = await Post.findOneAndUpdate(
+        { _id: existingDraft._id, owner: req.user._id },
+        {
+          title,
+          excerpt,
+          image,
+          categories: Array.isArray(categories) ? categories : [],
+          content,
+          readingTime,
+          isDraft: false,
+        },
+        { new: true }
+      );
+    } else {
+      // Tạo bài viết mới nếu không có bản nháp
+      post = new Post({
+        title,
+        excerpt,
+        image,
+        categories: Array.isArray(categories) ? categories : [],
+        content,
+        readingTime,
+        owner: req.user._id,
+        isDraft: false,
       });
+      await post.save();
     }
   }
 
-  const post = new Post({
-    title,
-    excerpt,
-    image,
-    categories: Array.isArray(categories) ? categories : [],
-    sections: Array.isArray(sections) ? sections : [],
-    readingTime,
-    owner: req.user._id,
-    isDraft: false,
-  });
-
-  await post.save();
   res.status(201).json(post);
 };
 
 export const updatePost = async (req, res) => {
   const { id } = req.params;
-  const { title, excerpt, image, categories, sections, readingTime } = req.body;
+  const { title, excerpt, image, categories, content, readingTime } = req.body;
 
-  if (!title?.vi) {
-    return res.status(400).json({ message: "Tiêu đề tiếng Việt là bắt buộc." });
-  }
-
-  if (!Array.isArray(sections)) {
-    return res.status(400).json({ message: "Sections phải là một mảng." });
-  }
-
-  for (const section of sections) {
-    if (!section.subtitle?.vi || !section.content?.vi) {
-      return res.status(400).json({
-        message: "Mỗi section cần có subtitle và content tiếng Việt.",
-      });
-    }
+  if (!title?.vi || !content?.vi) {
+    return res
+      .status(400)
+      .json({ message: "Tiêu đề và nội dung tiếng Việt là bắt buộc." });
   }
 
   try {
-    const updatedPost = await Post.findByIdAndUpdate(
-      id,
-      { title, excerpt, image, categories, sections, readingTime },
+    const updatedPost = await Post.findOneAndUpdate(
+      { _id: id, owner: req.user._id },
+      { title, excerpt, image, categories, content, readingTime },
       { new: true }
     );
 
     if (!updatedPost) {
-      return res.status(404).json({ message: "Post not found" });
+      return res
+        .status(404)
+        .json({ message: "Post not found or unauthorized" });
     }
 
     res.json(updatedPost);
@@ -107,6 +137,7 @@ export const updatePost = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 export const getPostByTitle = async (req, res) => {
   try {
     const { title } = req.params;
@@ -132,18 +163,16 @@ export const getPostByTitle = async (req, res) => {
 };
 
 export const saveDraft = async (req, res) => {
-  const {
-    _id, // nếu có thì cập nhật, không có thì tạo mới
-    title,
-    excerpt,
-    image,
-    categories,
-    sections,
-    readingTime,
-  } = req.body;
+  const { title, excerpt, image, categories, content, readingTime } = req.body;
 
   if (req.user.role !== "admin") {
     return res.status(403).json({ message: "Only admins can save drafts" });
+  }
+
+  if (!title?.vi || !content?.vi) {
+    return res
+      .status(400)
+      .json({ message: "Tiêu đề và nội dung tiếng Việt là bắt buộc." });
   }
 
   const postData = {
@@ -151,21 +180,25 @@ export const saveDraft = async (req, res) => {
     excerpt,
     image,
     categories: Array.isArray(categories) ? categories : [],
-    sections: Array.isArray(sections) ? sections : [],
+    content,
     readingTime,
     owner: req.user._id,
     isDraft: true,
   };
 
   try {
-    let draft;
-    if (_id) {
+    // Kiểm tra xem đã có bản nháp nào chưa
+    let draft = await Post.findOne({ owner: req.user._id, isDraft: true });
+
+    if (draft) {
+      // Cập nhật bản nháp hiện có
       draft = await Post.findOneAndUpdate(
-        { _id, owner: req.user._id },
+        { _id: draft._id, owner: req.user._id },
         postData,
-        { new: true, upsert: true }
+        { new: true }
       );
     } else {
+      // Tạo bản nháp mới nếu chưa có
       draft = new Post(postData);
       await draft.save();
     }

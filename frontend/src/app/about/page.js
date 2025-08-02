@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { FaFacebook, FaRegStar, FaPen, FaStar } from "react-icons/fa6"; // Thêm FaStar để toggle icon
+import { FaFacebook, FaRegStar, FaPen, FaStar } from "react-icons/fa6";
 import DividerIcon from "@/components/DividerIcon";
 import { montserrat } from "@/lib/font";
 import {
@@ -15,6 +15,35 @@ import { useRouter } from "next/navigation";
 import useTranslation from "@/app/hooks/useTranslations";
 import { getLocalizedText } from "@/lib/getLocalizedText";
 import getValidImage from "@/lib/getValidImage";
+
+// Hàm để render nội dung Tiptap JSON
+const renderTiptapContent = (content, language, defaultContent) => {
+  if (!content || !content[language]) return defaultContent;
+
+  const nodes = content[language]?.content || [];
+  return nodes.map((node, index) => {
+    if (node.type === "heading") {
+      const level = node.attrs?.level || 2;
+      const HeadingTag = `h${level}`;
+      return (
+        <HeadingTag
+          key={index}
+          className="text-[18px] font-semibold text-[#444]"
+        >
+          {node.content?.map((c) => c.text).join("") || ""}
+        </HeadingTag>
+      );
+    }
+    if (node.type === "paragraph") {
+      return (
+        <p key={index} className="text-[16px] text-[#555] leading-relaxed">
+          {node.content?.map((c) => c.text).join("") || ""}
+        </p>
+      );
+    }
+    return null;
+  });
+};
 
 export default function AboutPage() {
   const [post, setPost] = useState(null);
@@ -47,13 +76,10 @@ export default function AboutPage() {
           title: { vi: t.defaultTitle, jp: t.defaultTitle },
           excerpt: { vi: t.defaultExcerpt, jp: t.defaultExcerpt },
           image: "",
-          sections: [
-            {
-              subtitle: { vi: t.defaultSubtitle, jp: t.defaultSubtitle },
-              content: { vi: t.defaultContent, jp: t.defaultContent },
-              image: "",
-            },
-          ],
+          content: {
+            vi: { type: "doc", content: [] },
+            jp: { type: "doc", content: [] },
+          },
           likes: [],
         });
       }
@@ -114,40 +140,8 @@ export default function AboutPage() {
         </p>
       )}
 
-      <div className="max-w-[750px] mx-auto text-[16px] text-[#555] leading-relaxed space-y-10">
-        {post.sections.map((section, index) => (
-          <div key={index} className="space-y-4">
-            {section.subtitle && (
-              <h2 className="text-[18px] font-semibold text-[#444]">
-                {getLocalizedText(
-                  section.subtitle,
-                  language,
-                  t.defaultSubtitle
-                )}
-              </h2>
-            )}
-
-            {section.content && (
-              <p>
-                {getLocalizedText(section.content, language, t.defaultContent)}
-              </p>
-            )}
-
-            {section.image && (
-              <Image
-                src={getValidImage(section?.image)}
-                alt={getLocalizedText(
-                  section.subtitle,
-                  language,
-                  t.defaultSubtitle
-                )}
-                width={750}
-                height={420}
-                className="object-cover rounded-lg mt-4 shadow"
-              />
-            )}
-          </div>
-        ))}
+      <div className="max-w-[750px] mx-auto text-[16px] text-[#555] leading-relaxed space-y-4">
+        {renderTiptapContent(post.content, language, t.defaultContent)}
       </div>
 
       <div className="w-full max-w-[750px] mx-auto mt-16">

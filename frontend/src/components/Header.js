@@ -71,7 +71,7 @@ const Header = ({ showAdminSidebar, setShowAdminSidebar }) => {
   const handleBlogMouseLeave = () => {
     blogTimeoutRef.current = setTimeout(() => {
       setIsBlogOpen(false);
-    }, 1500);
+    }, 1000);
   };
 
   const t = {
@@ -235,7 +235,7 @@ const Header = ({ showAdminSidebar, setShowAdminSidebar }) => {
 
       <div className="flex space-x-3 text-black text-[16px]">
         <a
-          href="https://facebook.com"
+          href="https://www.facebook.com/lemonnari"
           target="_blank"
           rel="noopener noreferrer"
           className="hover:text-[#e1c680]"
@@ -243,7 +243,7 @@ const Header = ({ showAdminSidebar, setShowAdminSidebar }) => {
           <IoLogoFacebook />
         </a>
         <a
-          href="https://tiktok.com"
+          href="https://www.tiktok.com/@thuhiennar?_t=ZS-8yJdhPe9aCt&_r=1"
           target="_blank"
           rel="noopener noreferrer"
           className="hover:text-[#e1c680]"
@@ -251,7 +251,7 @@ const Header = ({ showAdminSidebar, setShowAdminSidebar }) => {
           <AiFillTikTok />
         </a>
         <a
-          href="https://instagram.com"
+          href="https://www.instagram.com/thuhien.nar/profilecard/?igsh=MXB4cms0YTYzNGU2MA%3D%3D"
           target="_blank"
           rel="noopener noreferrer"
           className="hover:text-[#e1c680]"

@@ -70,7 +70,6 @@ async function handleOAuthCallback(profile, strategyName, done) {
 
     return done(null, user);
   } catch (error) {
-    console.error(`${strategyName} auth error:`, error);
     return done(error, null);
   }
 }
@@ -85,7 +84,6 @@ passport.use(
       scope: ["profile", "email"],
     },
     (accessToken, refreshToken, profile, done) => {
-      console.log("Google profile:", profile);
       return handleOAuthCallback(profile, "google", done);
     }
   )
@@ -101,7 +99,6 @@ passport.use(
       scope: ["user:email"],
     },
     (accessToken, refreshToken, profile, done) => {
-      console.log("GitHub profile:", profile);
       return handleOAuthCallback(profile, "github", done);
     }
   )
@@ -117,7 +114,6 @@ passport.use(
       profileFields: ["id", "displayName", "photos", "email"],
     },
     (accessToken, refreshToken, profile, done) => {
-      console.log("Facebook profile:", profile);
       return handleOAuthCallback(profile, "facebook", done);
     }
   )
@@ -125,17 +121,14 @@ passport.use(
 
 // Serialize và Deserialize user
 passport.serializeUser((user, done) => {
-  console.log("Serializing user:", user._id);
   done(null, user._id);
 });
 
 passport.deserializeUser(async (id, done) => {
   try {
     const user = await User.findById(id);
-    console.log("Deserialized user:", user);
     done(null, user);
   } catch (error) {
-    console.error("Deserialize error:", error);
     done(error, null);
   }
 });

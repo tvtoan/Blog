@@ -8,9 +8,27 @@ import { montserrat } from "../lib/font";
 import { slugifyCategory } from "../lib/slugifyCategory";
 import { getPosts } from "@/app/services/postService";
 import Link from "next/link";
+import { subscribe } from "@/app/services/authService";
 
 export default function Footer() {
   const [categories, setCategories] = useState([]);
+  const [email, setEmail] = useState("");
+  const [subscribed, setSubscribed] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubscribe = async () => {
+    setError("");
+    try {
+      if (!email || !email.includes("@")) {
+        setError("Please enter a valid email address.");
+        return;
+      }
+      await subscribe(email);
+      setSubscribed(true);
+    } catch (err) {
+      setError(err.message || "Failed to subscribe. Please try again.");
+    }
+  };
 
   useEffect(() => {
     if (!window.FB) {
@@ -121,21 +139,21 @@ export default function Footer() {
       <div className="container mx-auto px-4 mt-8 text-center">
         <div className="flex justify-center space-x-16 mb-8">
           <a
-            href="https://facebook.com"
+            href="https://www.facebook.com/lemonnari"
             target="_blank"
             rel="noopener noreferrer"
           >
             <IoLogoFacebook className="text-white w-5 h-5 hover:text-[#f1c40f] transition-colors" />
           </a>
           <a
-            href="https://facebook.com"
+            href="https://www.tiktok.com/@thuhiennar?_t=ZS-8yJdhPe9aCt&_r=1"
             target="_blank"
             rel="noopener noreferrer"
           >
             <AiFillTikTok className="text-white w-5 h-5 hover:text-[#f1c40f] transition-colors" />
           </a>
           <a
-            href="https://instagram.com"
+            href="https://www.instagram.com/thuhien.nar/profilecard/?igsh=MXB4cms0YTYzNGU2MA%3D%3D"
             target="_blank"
             rel="noopener noreferrer"
           >

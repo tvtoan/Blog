@@ -11,19 +11,10 @@ const postSchema = new mongoose.Schema({
   },
   categories: [{ type: String }],
   image: { type: String },
-  sections: [
-    {
-      subtitle: {
-        vi: { type: String, required: true },
-        jp: { type: String },
-      },
-      content: {
-        vi: { type: String, required: true },
-        jp: { type: String },
-      },
-      image: { type: String },
-    },
-  ],
+  content: {
+    vi: { type: Object, required: true }, // stored as Tiptap JSON format
+    jp: { type: Object },
+  },
   isDraft: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   readingTime: { type: Number },

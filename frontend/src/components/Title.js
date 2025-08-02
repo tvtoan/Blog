@@ -21,17 +21,21 @@ const Title = () => {
 
       <div className="flex justify-center space-x-4 mb-8 mt-4">
         <a
-          href="https://facebook.com"
+          href="https://www.facebook.com/lemonnari"
           target="_blank"
           rel="noopener noreferrer"
         >
           <IoLogoFacebook className="text-black  hover:text-[#f1c40f] transition-colors text-xl" />
         </a>
-        <a href="https://youtube.com" target="_blank" rel="noopener noreferrer">
+        <a
+          href="https://www.tiktok.com/@thuhiennar?_t=ZS-8yJdhPe9aCt&_r=1"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <AiFillTikTok className="text-black hover:text-[#f1c40f] transition-colors text-xl" />
         </a>
         <a
-          href="https://instagram.com"
+          href="https://www.instagram.com/thuhien.nar/profilecard/?igsh=MXB4cms0YTYzNGU2MA%3D%3D"
           target="_blank"
           rel="noopener noreferrer"
         >

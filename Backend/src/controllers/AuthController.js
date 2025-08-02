@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
 export const getUser = (req, res) => {
-  console.log("getUser req.user:", req.user); // Debug
   if (req.user) return res.json(req.user);
   res.status(401).json({ message: "Not authenticated" });
 };
@@ -17,7 +16,6 @@ export const getAdminInfo = async (req, res) => {
     }
     res.json(admin);
   } catch (error) {
-    console.error("Error fetching admin info:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
@@ -78,13 +76,11 @@ export const updateAdmin = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error updating admin:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
 export const googleCallback = (req, res) => {
-  console.log("Google callback user:", req.user); // Debug
   if (!req.user) {
     return res.status(401).json({ message: "No user data" });
   }
@@ -97,7 +93,6 @@ export const googleCallback = (req, res) => {
 };
 
 export const githubCallback = (req, res) => {
-  console.log("GitHub callback user:", req.user); // Debug
   if (!req.user) {
     return res.status(401).json({ message: "No user data" });
   }
@@ -110,7 +105,6 @@ export const githubCallback = (req, res) => {
 };
 
 export const facebookCallback = (req, res) => {
-  console.log("Facebook callback user:", req.user); // Debug
   if (!req.user) {
     return res.status(401).json({ message: "No user data" });
   }
@@ -136,7 +130,41 @@ export const getUsers = async (req, res) => {
 
     res.json(users);
   } catch (error) {
-    console.error("Error fetching users:", error);
     res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+import nodemailer from "nodemailer";
+
+export const subscribe = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email || !email.includes("@")) {
+    return res.status(400).json({ message: "Email không hợp lệ" });
+  }
+
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    await transporter.sendMail({
+      from: '"Lemonari Blog" <your_email@gmail.com>',
+      to: email,
+      subject: "Cảm ơn bạn đã đăng ký!",
+      html: `
+        <h2>Xin chào!</h2>
+        <p>Cảm ơn bạn đã đăng ký nhận thông báo từ Lemonari Blog. Bạn sẽ là người đầu tiên nhận được bài viết mới!</p>
+        <p>Thân ái 💛</p>
+      `,
+    });
+
+    res.status(200).json({ message: "Email đã được gửi thành công!" });
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi gửi mail", error: err.message });
   }
 };

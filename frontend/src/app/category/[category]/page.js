@@ -112,7 +112,7 @@ export default function CategoryPage() {
               </div>
 
               {post.image && (
-                <Image
+                <img
                   src={getValidImage(post?.image)}
                   alt={getLocalizedText(post.title, translations.language)}
                   width={800}

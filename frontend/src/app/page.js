@@ -24,7 +24,9 @@ export default function Home() {
     const fetchPosts = async () => {
       try {
         const fetchedPosts = await getPosts();
-        setPosts(fetchedPosts);
+        // Lọc chỉ lấy bài viết không phải bản nháp (isDraft: false)
+        const publishedPosts = fetchedPosts.filter((post) => !post.isDraft);
+        setPosts(publishedPosts);
       } catch (err) {
         setError(err.message || "Lỗi khi lấy danh sách bài viết.");
       } finally {
@@ -86,7 +88,7 @@ export default function Home() {
                   {t.readingTime} {post.readingTime}
                 </div>
               </div>
-              <Image
+              <img
                 src={getValidImage(post?.image)}
                 alt={getLocalizedText(post.title, translations.language)}
                 width={800}

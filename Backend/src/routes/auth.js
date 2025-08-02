@@ -8,6 +8,7 @@ import {
   getAdminInfo,
   updateAdmin,
   getUsers,
+  subscribe,
 } from "../controllers/AuthController.js";
 import authMiddleware from "../middlewares/auth.js";
 
@@ -56,5 +57,7 @@ router.get(
   }),
   facebookCallback
 );
+
+router.post("/subscribe", subscribe);
 
 export default router;
