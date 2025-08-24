@@ -18,4 +18,8 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ["user", "admin"], default: "user" },
 });
 
+userSchema.index({ role: 1 });
+userSchema.index({ providerId: 1 });
+userSchema.index({ createdAt: -1 });
+
 export default mongoose.model("User", userSchema);

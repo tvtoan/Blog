@@ -32,7 +32,7 @@ export default function ClientLayout({ children }) {
               showAdminSidebar={showAdminSidebar}
               setShowAdminSidebar={setShowAdminSidebar}
             />
-            <main className="w-full flex-1 py-5 px-0 md:px-10 bg-white">
+            <main className="w-full flex-1 py-5 px-0 md:px-10 bg-white min-h-screen">
               {children}
             </main>
             {!isAdminPage && (

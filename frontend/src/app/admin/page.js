@@ -1,12 +1,37 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { deletePost, getPosts } from "@/app/services/postService";
 import { getComments } from "@/app/services/commentService";
 import useAuthUser from "@/app/hooks/useAuthUser";
 import { getLocalizedText } from "@/lib/getLocalizedText";
 import useTranslation from "@/app/hooks/useTranslations";
+
+const DEFAULT_IMAGE = "/default-image.jpg";
+const BASE_URL = "http://localhost:5000";
+
+const formatImage = (image) => {
+  if (!image || typeof image !== "string") {
+    return DEFAULT_IMAGE;
+  }
+  if (image.startsWith("/uploads/")) {
+    return `${BASE_URL}${image}`;
+  }
+  if (image.startsWith("data:image/")) {
+    return image;
+  }
+  try {
+    const url = new URL(image);
+    const imageExtensions = /\.(jpg|jpeg|png|gif|webp)$/i;
+    if (imageExtensions.test(url.pathname)) {
+      return image;
+    }
+  } catch {
+    // Không phải URL hợp lệ
+  }
+  return DEFAULT_IMAGE;
+};
 
 export default function AdminPostPage() {
   const router = useRouter();
@@ -20,9 +45,9 @@ export default function AdminPostPage() {
   const [endDate, setEndDate] = useState("");
 
   const translations = useTranslation();
-  const t = translations.AdminPost;
+  const t = translations.AdminPost || {};
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     try {
       const data = await getPosts();
       setPosts(data);
@@ -33,9 +58,9 @@ export default function AdminPostPage() {
     } finally {
       setFetching(false);
     }
-  };
+  }, []);
 
-  const fetchAllComments = async (posts) => {
+  const fetchAllComments = useCallback(async (posts) => {
     const counts = {};
     await Promise.all(
       posts.map(async (post) => {
@@ -49,9 +74,9 @@ export default function AdminPostPage() {
       })
     );
     setCommentCounts(counts);
-  };
+  }, []);
 
-  const buildCommentTree = (rawComments) => {
+  const buildCommentTree = useCallback((rawComments) => {
     const map = new Map();
     const roots = [];
     rawComments.forEach((c) => map.set(c._id, { ...c, replies: [] }));
@@ -62,9 +87,9 @@ export default function AdminPostPage() {
       } else roots.push(comment);
     });
     return roots;
-  };
+  }, []);
 
-  const countAllComments = (comments) => {
+  const countAllComments = useCallback((comments) => {
     let count = 0;
     comments.forEach((comment) => {
       count += 1;
@@ -73,9 +98,9 @@ export default function AdminPostPage() {
       }
     });
     return count;
-  };
+  }, []);
 
-  const handleFilter = () => {
+  const handleFilter = useCallback(() => {
     const from = startDate ? new Date(startDate) : null;
     const to = endDate ? new Date(endDate) : null;
 
@@ -88,23 +113,26 @@ export default function AdminPostPage() {
 
     setFilteredPosts(filtered);
     setVisibleCount(10);
-  };
+  }, [startDate, endDate, posts]);
 
-  const handleDelete = async (id) => {
-    if (!confirm(t.confirmDelete)) return;
-    try {
-      await deletePost(id);
-      fetchPosts();
-    } catch (err) {
-      alert(t.error + err.message);
-    }
-  };
+  const handleDelete = useCallback(
+    async (id) => {
+      if (!confirm(t.confirmDelete)) return;
+      try {
+        await deletePost(id);
+        fetchPosts();
+      } catch (err) {
+        alert(t.error + err.message);
+      }
+    },
+    [fetchPosts, t]
+  );
 
   useEffect(() => {
     if (!loading && user?.role === "admin") {
       fetchPosts();
     }
-  }, [loading, user]);
+  }, [loading, user, fetchPosts]);
 
   if (loading || fetching) {
     return (
@@ -117,12 +145,10 @@ export default function AdminPostPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
+    <div className="max-w-5xl mx-auto px-4 py-10 min-h-[calc(100vh-60px)]">
       <h1 className="text-4xl font-bold text-yellow-600 mb-8 text-center">
         {t.managePosts}
       </h1>
-
-      {/* Bộ lọc ngày */}
       <div className="bg-white p-6 rounded-lg shadow mb-8 flex flex-col md:flex-row gap-4 md:items-end justify-between">
         <div className="flex flex-col gap-2 w-full md:w-auto">
           <label className="text-sm font-medium text-gray-700">
@@ -166,56 +192,67 @@ export default function AdminPostPage() {
           </button>
         </div>
       </div>
-
-      {/* Danh sách bài viết */}
       <div className="space-y-4">
         {filteredPosts.slice(0, visibleCount).map((post) => (
           <div
             key={post._id}
-            className="bg-white p-6 rounded-xl shadow border hover:border-yellow-500 transition"
+            className="bg-white p-6 rounded-xl shadow border hover:border-yellow-500 transition flex flex-col md:flex-row gap-4"
           >
-            <div
-              className="cursor-pointer"
-              onClick={() => router.push(`/posts/${post._id}`)}
-            >
-              <h3 className="text-xl font-semibold text-gray-800 hover:text-yellow-600 transition">
-                {getLocalizedText(
-                  post.title,
-                  translations.language,
-                  "No Title"
-                )}
-              </h3>
-              <p className="text-sm text-gray-600 mt-1">
-                {getLocalizedText(
-                  post.excerpt,
-                  translations.language,
-                  "No Excerpt"
-                )}
-              </p>
-              <p className="text-xs text-gray-400 mt-2">
-                {commentCounts[post._id] ?? 0} {t.comments} • {post.readingTime}{" "}
-                {t.minutes}
-              </p>
-            </div>
-            <div className="mt-4 flex gap-4">
-              <button
-                className="text-blue-600 hover:underline"
-                onClick={() => router.push(`/admin/edit-post/${post._id}`)}
+            {post.image && (
+              <div className="flex-shrink-0">
+                <img
+                  src={formatImage(post.image)}
+                  alt={getLocalizedText(
+                    post.title,
+                    translations.language,
+                    "No Title"
+                  )}
+                  className="w-24 h-24 object-cover rounded-lg"
+                />
+              </div>
+            )}
+            <div className="flex-1">
+              <div
+                className="cursor-pointer"
+                onClick={() => router.push(`/posts/${post._id}`)}
               >
-                ✏️ {t.edit}
-              </button>
-              <button
-                className="text-red-600 hover:underline"
-                onClick={() => handleDelete(post._id)}
-              >
-                🗑️ {t.delete}
-              </button>
+                <h3 className="text-xl font-semibold text-gray-800 hover:text-yellow-600 transition">
+                  {getLocalizedText(
+                    post.title,
+                    translations.language,
+                    "No Title"
+                  )}
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  {getLocalizedText(
+                    post.excerpt,
+                    translations.language,
+                    "No Excerpt"
+                  )}
+                </p>
+                <p className="text-xs text-gray-400 mt-2">
+                  {commentCounts[post._id] ?? 0} {t.comments} •{" "}
+                  {post.readingTime} {t.minutes}
+                </p>
+              </div>
+              <div className="mt-4 flex gap-4">
+                <button
+                  className="text-blue-600 hover:underline"
+                  onClick={() => router.push(`/admin/edit-post/${post._id}`)}
+                >
+                  ✏️ {t.edit}
+                </button>
+                <button
+                  className="text-red-600 hover:underline"
+                  onClick={() => handleDelete(post._id)}
+                >
+                  🗑️ {t.delete}
+                </button>
+              </div>
             </div>
           </div>
         ))}
       </div>
-
-      {/* Nút hiển thị thêm */}
       {visibleCount < filteredPosts.length && (
         <div className="text-center mt-10">
           <button

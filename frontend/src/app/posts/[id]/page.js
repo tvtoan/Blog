@@ -21,9 +21,76 @@ import getValidImage from "@/lib/getValidImage";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
+import TextStyle from "@tiptap/extension-text-style";
+import FontSize from "@/components/FontSize";
 
 const DEFAULT_AVATAR = "/cv.jpg";
 const DEFAULT_IMAGE = "/default-image.jpg";
+const BASE_URL = "http://localhost:5000"; // Tiền tố URL cho server local
+
+// Hàm chuyển văn bản thô thành JSON Tiptap (dùng khi cần)
+const convertToTiptapJson = (text) => {
+  if (!text || typeof text !== "string") return { type: "doc", content: [] };
+  return {
+    type: "doc",
+    content: [
+      {
+        type: "paragraph",
+        content: [
+          {
+            type: "text",
+            text: text,
+          },
+        ],
+      },
+    ],
+  };
+};
+
+// Hàm xử lý và định dạng ảnh từ JSON Tiptap
+const processTiptapImage = (content) => {
+  if (content && Array.isArray(content)) {
+    return content.map((node) => {
+      if (node.type === "image") {
+        const src = node.attrs?.src || "";
+        // Nếu src là đường dẫn tương đối, thêm BASE_URL; nếu là base64 hoặc URL đầy đủ, giữ nguyên
+        if (src.startsWith("/uploads/")) {
+          return {
+            ...node,
+            attrs: { ...node.attrs, src: `${BASE_URL}${src}` },
+          };
+        } else {
+          return {
+            ...node,
+            attrs: {
+              ...node.attrs,
+              src: src.startsWith("data:image")
+                ? src
+                : getValidImage(src) || DEFAULT_IMAGE,
+            },
+          };
+        }
+      }
+      if (node.content) {
+        node.content = processTiptapImage(node.content);
+      }
+      return node;
+    });
+  }
+  return content;
+};
+
+// Hàm định dạng ảnh bìa
+const formatCoverImage = (image) => {
+  if (!image) return DEFAULT_IMAGE;
+  // Nếu là đường dẫn tương đối, thêm BASE_URL; nếu là base64 hoặc URL đầy đủ, giữ nguyên
+  if (image.startsWith("/uploads/")) {
+    return `${BASE_URL}${image}`;
+  }
+  return image.startsWith("data:image")
+    ? image
+    : getValidImage(image) || DEFAULT_IMAGE;
+};
 
 export default function Post() {
   const { language } = useLanguage();
@@ -33,13 +100,22 @@ export default function Post() {
   const [commentCount, setCommentCount] = useState(0);
   const router = useRouter();
   const { id } = useParams();
+  console.log("post", post);
 
-  // Initialize Tiptap editor for displaying content (read-only)
-  const editor = useEditor({
-    extensions: [StarterKit, Image.configure({ inline: true })],
-    editable: false,
-    immediatelyRender: false,
-  });
+  // Khởi tạo Tiptap editor chỉ khi ở phía client
+  const editor =
+    typeof window !== "undefined"
+      ? useEditor({
+          extensions: [
+            StarterKit,
+            Image.configure({ inline: true }),
+            TextStyle,
+            FontSize,
+          ],
+          editable: false,
+          immediatelyRender: false,
+        })
+      : null;
 
   useEffect(() => {
     async function fetchData() {
@@ -48,13 +124,23 @@ export default function Post() {
         const postData = await getPost(id);
         setPost(postData);
 
-        // Set editor content based on language
+        // Đảm bảo editor đã sẵn sàng trước khi set content
         if (editor) {
-          const content = getLocalizedText(postData.content, language, {
+          const rawContent = getLocalizedText(postData.content, language, {
             type: "doc",
             content: [],
           });
-          editor.commands.setContent(content);
+          // Nếu rawContent là chuỗi, chuyển thành JSON Tiptap; nếu đã là object, xử lý ảnh
+          let tiptapContent =
+            typeof rawContent === "string"
+              ? convertToTiptapJson(rawContent)
+              : rawContent;
+          // Xử lý ảnh trong nội dung Tiptap
+          if (tiptapContent && tiptapContent.content) {
+            tiptapContent.content = processTiptapImage(tiptapContent.content);
+          }
+          console.log("Tiptap content:", tiptapContent); // Debug
+          editor.commands.setContent(tiptapContent, false);
         }
 
         const comments = await getComments(id);
@@ -76,8 +162,11 @@ export default function Post() {
         console.error(err.message);
       }
     }
-    if (id) {
+
+    if (id && editor) {
       fetchData();
+    } else if (!editor) {
+      console.log("Editor chưa sẵn sàng hoặc không ở phía client");
     } else {
       setError(
         getLocalizedText(
@@ -161,7 +250,7 @@ export default function Post() {
       </div>
 
       <img
-        src={getValidImage(post.image) || DEFAULT_IMAGE}
+        src={formatCoverImage(post.image)}
         alt={getLocalizedText(post.title, language)}
         width={750}
         height={420}
@@ -181,7 +270,11 @@ export default function Post() {
 
       <div className="prose mb-16">
         <div className="mb-6">
-          <EditorContent editor={editor} className="text-[16px] w-[750px]" />
+          <EditorContent
+            editor={editor}
+            className="text-[16px] w-[750px]"
+            style={{ fontFamily: "'Times New Roman', Times, serif" }}
+          />
         </div>
       </div>
 

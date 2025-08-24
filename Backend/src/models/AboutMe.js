@@ -21,5 +21,6 @@ const aboutMeSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+aboutMeSchema.index({ slug: 1 });
 
 export default mongoose.model("AboutMe", aboutMeSchema);

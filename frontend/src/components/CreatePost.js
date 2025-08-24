@@ -11,7 +11,7 @@ import { useLanguage } from "@/app/context/LanguageContext";
 import debounce from "lodash/debounce";
 import { createPost, saveDraft, getMyDraft } from "@/app/services/postService";
 import EditorToolbar from "./EditorToolbar";
-import { FontSize } from "./FontSize";
+import FontSize from "./FontSize";
 import "../app/globals.css";
 import mammoth from "mammoth";
 
@@ -27,12 +27,13 @@ export default function CreatePost({ t, onPostCreated }) {
       jp: { type: "doc", content: [] },
     },
     readingTime: 1,
-    image: "",
+    image: "", // Chỉ giữ image (URL hoặc base64)
   });
   const [saving, setSaving] = useState(false);
   const [draftId, setDraftId] = useState(null);
   const [isDraftSaving, setIsDraftSaving] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState(null);
 
   const cleanContent = (content) => {
     if (typeof content === "string") {
@@ -44,7 +45,7 @@ export default function CreatePost({ t, onPostCreated }) {
   const editorVi = useEditor({
     extensions: [
       StarterKit,
-      Image.configure({ inline: true, allowBase64: true }),
+      Image.configure({ inline: true, allowBase64: false }), // Tắt allowBase64 để kiểm soát paste
       TextStyle,
       FontSize,
     ],
@@ -62,7 +63,7 @@ export default function CreatePost({ t, onPostCreated }) {
   const editorJp = useEditor({
     extensions: [
       StarterKit,
-      Image.configure({ inline: true, allowBase64: true }),
+      Image.configure({ inline: true, allowBase64: false }), // Tắt allowBase64 để kiểm soát paste
       TextStyle,
       FontSize,
     ],
@@ -76,6 +77,66 @@ export default function CreatePost({ t, onPostCreated }) {
       }));
     },
   });
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const maxSize = 1 * 1024 * 1024; // 1MB
+    if (file.size > maxSize) {
+      setError(t.errorFileSize || "Ảnh quá lớn (tối đa 1MB).");
+      return;
+    }
+
+    const filetypes = ["image/jpeg", "image/jpg", "image/png"];
+    if (!filetypes.includes(file.type)) {
+      setError(t.errorFileType || "Chỉ hỗ trợ ảnh PNG/JPEG.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setNewPost((prev) => ({
+        ...prev,
+        image: event.target.result, // Chuyển file thành base64
+      }));
+    };
+    reader.readAsDataURL(file);
+    setError(null);
+  };
+
+  const handleImagePaste = (event) => {
+    const items = event.clipboardData?.items;
+    if (!items) return;
+
+    for (const item of items) {
+      if (item.type.startsWith("image/")) {
+        const file = item.getAsFile();
+        if (file.size > 1 * 1024 * 1024) {
+          setError(t.errorFileSize || "Ảnh quá lớn (tối đa 1MB).");
+          return;
+        }
+
+        const filetypes = ["image/jpeg", "image/jpg", "image/png"];
+        if (!filetypes.includes(file.type)) {
+          setError(t.errorFileType || "Chỉ hỗ trợ ảnh PNG/JPEG.");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          setNewPost((prev) => ({
+            ...prev,
+            image: reader.result, // Lưu base64 từ paste
+          }));
+          setError(null);
+        };
+        reader.readAsDataURL(file);
+        event.preventDefault();
+        break;
+      }
+    }
+  };
 
   const debouncedSaveDraft = useRef(
     debounce(async (data, currentDraftId) => {
@@ -94,6 +155,7 @@ export default function CreatePost({ t, onPostCreated }) {
         setDraftId(saved._id);
       } catch (err) {
         console.warn("❌ Lưu bản nháp thất bại:", err.message);
+        setError(t.errorDraft || "Lưu bản nháp thất bại: " + err.message);
       } finally {
         setIsDraftSaving(false);
       }
@@ -111,6 +173,7 @@ export default function CreatePost({ t, onPostCreated }) {
               vi: draft.content?.vi || { type: "doc", content: [] },
               jp: draft.content?.jp || { type: "doc", content: [] },
             },
+            image: draft.image || "", // Lấy image từ draft (URL hoặc base64)
           });
           setDraftId(draft._id);
           if (editorVi)
@@ -125,8 +188,11 @@ export default function CreatePost({ t, onPostCreated }) {
       })
       .catch((err) => {
         console.warn("❌ Không tải được bản nháp:", err.message);
+        setError(
+          t.errorFetchDraft || "Không tải được bản nháp: " + err.message
+        );
       });
-  }, [editorVi, editorJp]);
+  }, [editorVi, editorJp, t]);
 
   useEffect(() => {
     if (
@@ -155,20 +221,33 @@ export default function CreatePost({ t, onPostCreated }) {
     e.preventDefault();
     if (saving) return;
     setSaving(true);
+    setError(null);
+
     try {
+      const contentSize = Buffer.byteLength(
+        JSON.stringify(newPost.content),
+        "utf8"
+      );
+      if (contentSize > 2 * 1024 * 1024) {
+        throw new Error(t.errorContentSize || "Nội dung quá lớn (tối đa 2MB).");
+      }
+
       const payload = {
         _id: draftId,
         title: newPost.title,
         excerpt: newPost.excerpt,
         readingTime: newPost.readingTime,
-        image: newPost.image,
+        image: newPost.image, // Chỉ gửi image (URL hoặc base64)
         categories: newPost.categories
           ? newPost.categories.split(",").map((c) => c.trim())
           : [],
         content: newPost.content,
         isDraft: false,
       };
-      await createPost(payload);
+
+      console.log("Payload sent to createPost:", payload); // Debug payload
+
+      const response = await createPost(payload);
       setNewPost({
         title: { vi: "", jp: "" },
         excerpt: { vi: "", jp: "" },
@@ -183,11 +262,17 @@ export default function CreatePost({ t, onPostCreated }) {
       setDraftId(null);
       if (editorVi) editorVi.commands.setContent({ type: "doc", content: [] });
       if (editorJp) editorJp.commands.setContent({ type: "doc", content: [] });
-      alert(t.saved);
+      alert(t.saved || "Đăng bài thành công!");
       if (onPostCreated) onPostCreated();
       router.push("/");
     } catch (err) {
-      alert(t.error + err.message);
+      console.error("Error creating post:", err);
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          t.error ||
+          "Lỗi khi đăng bài."
+      );
     } finally {
       setSaving(false);
     }
@@ -196,22 +281,7 @@ export default function CreatePost({ t, onPostCreated }) {
   const extractDocxContent = async (file) => {
     try {
       const arrayBuffer = await file.arrayBuffer();
-      const result = await mammoth.convertToHtml({
-        arrayBuffer,
-        convertImage: (element) => {
-          return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              const base64Image = e.target.result;
-              resolve({
-                src: base64Image,
-                alt: element.alt || "Image from Word",
-              });
-            };
-            reader.readAsDataURL(element.content);
-          });
-        },
-      });
+      const result = await mammoth.convertToHtml({ arrayBuffer });
       return result.value || "<p>Nội dung trống</p>";
     } catch (err) {
       throw new Error(`Lỗi đọc file Word: ${err.message}`);
@@ -223,7 +293,7 @@ export default function CreatePost({ t, onPostCreated }) {
     e.stopPropagation();
     const files = Array.from(e.dataTransfer?.files || []);
     if (!files.length) {
-      alert(t.noFile || "Không có file được chọn");
+      setError(t.noFile || "Không có file được chọn");
       return;
     }
 
@@ -238,7 +308,7 @@ export default function CreatePost({ t, onPostCreated }) {
     const editor = isJp ? editorJp : isVi ? editorVi : null;
 
     if (!editor) {
-      alert(t.invalidEditor || "Không xác định được vùng biên tập");
+      setError(t.invalidEditor || "Không xác định được vùng biên tập");
       return;
     }
 
@@ -246,11 +316,11 @@ export default function CreatePost({ t, onPostCreated }) {
     try {
       for (const file of files) {
         if (!validTypes.includes(file.type)) {
-          alert(t.invalidFileType || `File ${file.name} không được hỗ trợ`);
+          setError(t.invalidFileType || `File ${file.name} không được hỗ trợ`);
           continue;
         }
         if (file.size > maxSize) {
-          alert(t.fileTooLarge || `File ${file.name} quá lớn, tối đa 10MB`);
+          setError(t.fileTooLarge || `File ${file.name} quá lớn, tối đa 10MB`);
           continue;
         }
 
@@ -263,12 +333,12 @@ export default function CreatePost({ t, onPostCreated }) {
         if (content) {
           editor.commands.insertContent(content);
         } else {
-          alert(t.fileReadError || `Không thể đọc nội dung từ ${file.name}`);
+          setError(t.fileReadError || `Không thể đọc nội dung từ ${file.name}`);
         }
       }
     } catch (err) {
       console.error("Error in handleDrop:", err);
-      alert(t.fileReadError || `Lỗi khi xử lý file: ${err.message}`);
+      setError(t.fileReadError || `Lỗi khi xử lý file: ${err.message}`);
     } finally {
       setIsProcessing(false);
     }
@@ -291,6 +361,7 @@ export default function CreatePost({ t, onPostCreated }) {
       <h1 className="text-2xl font-bold text-gray-800 mb-6">
         {t.createPost || "Tạo bài viết mới"}
       </h1>
+
       <form onSubmit={handleCreate} className="space-y-6">
         <div className="grid md:grid-cols-2 gap-6">
           <div>
@@ -376,15 +447,31 @@ export default function CreatePost({ t, onPostCreated }) {
 
         <div>
           <label className="block mb-2 text-sm font-medium text-gray-700">
-            {t.imageUrl || "URL ảnh"}
+            {t.imageUrl || "Ảnh bìa (URL, dán ảnh, hoặc upload)"}
           </label>
           <input
             type="text"
-            className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none hover:bg-gray-100 transition-all duration-200 text-gray-800 placeholder-gray-400"
+            className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none hover:bg-gray-100 transition-all duration-200 text-gray-800 placeholder-gray-400 mb-2"
             value={newPost.image}
             onChange={(e) => setNewPost({ ...newPost, image: e.target.value })}
-            placeholder="Nhập URL ảnh"
+            onPaste={handleImagePaste}
+            placeholder="Nhập URL ảnh hoặc dán ảnh trực tiếp"
           />
+          <div className="relative">
+            <input
+              type="file"
+              id="file-upload"
+              accept="image/jpeg,image/jpg,image/png"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            <label
+              htmlFor="file-upload"
+              className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition-all duration-200 cursor-pointer text-center block"
+            >
+              Chọn file ảnh từ máy
+            </label>
+          </div>
           {newPost.image && (
             <img
               src={newPost.image}
@@ -393,58 +480,37 @@ export default function CreatePost({ t, onPostCreated }) {
             />
           )}
         </div>
-        <div className="space-y-6">
-          <div
-            className="relative rounded-xl border border-gray-200 p-5 bg-white shadow-sm hover:shadow-md transition-all"
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-          >
-            <label className="block mb-3 text-base font-semibold text-gray-800">
-              {t.content || "Nội dung (Tiếng Việt)"}
-            </label>
-            <EditorToolbar editor={editorVi} />
-            {isProcessing && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-50 z-10">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-              </div>
-            )}
-            <EditorContent
-              editor={editorVi}
-              onDrop={handleDrop}
-              className="tiptap tiptap-vi w-full rounded-lg min-h-[200px] bg-gray-50 p-4 text-sm text-gray-800 outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2"
-            />
-            {!newPost.content.vi.content.length && (
-              <div className="absolute inset-0 flex items-center justify-center text-gray-400 pointer-events-none">
-                {t.dropFiles || "Kéo và thả file Word vào đây"}
-              </div>
-            )}
-          </div>
 
-          <div
-            className="relative rounded-xl border border-gray-200 p-5 bg-white shadow-sm hover:shadow-md transition-all"
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-          >
-            <label className="block mb-3 text-base font-semibold text-gray-800">
-              {t.content_1 || "Nội dung (Tiếng Nhật)"}
-            </label>
-            <EditorToolbar editor={editorJp} />
-            {isProcessing && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-50 z-10">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-              </div>
-            )}
-            <EditorContent
-              editor={editorJp}
-              onDrop={handleDrop}
-              className="tiptap tiptap-jp w-full rounded-lg min-h-[200px] bg-gray-50 p-4 text-sm text-gray-800 outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2"
-            />
-            {!newPost.content.jp.content.length && (
-              <div className="absolute inset-0 flex items-center justify-center text-gray-400 pointer-events-none">
-                {t.dropFiles || "Kéo và thả file Word vào đây"}
-              </div>
-            )}
-          </div>
+        <div
+          className="relative rounded-xl border border-gray-200 p-5 bg-white shadow-sm hover:shadow-md transition-all"
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+        >
+          <label className="block mb-3 text-base font-semibold text-gray-800">
+            {t.content || "Nội dung (Tiếng Việt)"}
+          </label>
+          <EditorToolbar editor={editorVi} />
+          <EditorContent
+            editor={editorVi}
+            onDrop={handleDrop}
+            className="tiptap tiptap-vi w-full rounded-lg min-h-[200px] bg-gray-50 p-4"
+          />
+        </div>
+
+        <div
+          className="relative rounded-xl border border-gray-200 p-5 bg-white shadow-sm hover:shadow-md transition-all"
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+        >
+          <label className="block mb-3 text-base font-semibold text-gray-800">
+            {t.content_1 || "Nội dung (Tiếng Nhật)"}
+          </label>
+          <EditorToolbar editor={editorJp} />
+          <EditorContent
+            editor={editorJp}
+            onDrop={handleDrop}
+            className="tiptap tiptap-jp w-full rounded-lg min-h-[200px] bg-gray-50 p-4"
+          />
         </div>
 
         <div className="text-right pt-4">

@@ -21,4 +21,8 @@ const postSchema = new mongoose.Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 });
 
+// Thêm index để tối ưu hóa truy vấn
+postSchema.index({ owner: 1, isDraft: 1 });
+postSchema.index({ createdAt: -1 });
+
 export default mongoose.model("Post", postSchema);

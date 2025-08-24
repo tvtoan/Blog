@@ -13,6 +13,10 @@ api.interceptors.request.use((config) => {
   } else {
     delete config.headers.Authorization;
   }
+  // Nếu gửi FormData, không đặt Content-Type để browser tự xử lý
+  if (!(config.data instanceof FormData)) {
+    config.headers["Content-Type"] = "application/json";
+  }
   return config;
 });
 

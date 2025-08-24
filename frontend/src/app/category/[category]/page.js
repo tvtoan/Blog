@@ -14,6 +14,21 @@ import useTranslation from "@/app/hooks/useTranslations";
 import { getLocalizedText } from "@/lib/getLocalizedText";
 import getValidImage from "@/lib/getValidImage";
 
+const DEFAULT_IMAGE = "/default-image.jpg";
+const BASE_URL = "http://localhost:5000"; // Tiền tố URL cho server local
+
+// Hàm định dạng ảnh
+const formatImage = (image) => {
+  if (!image) return DEFAULT_IMAGE;
+  // Nếu là đường dẫn tương đối, thêm BASE_URL; nếu là base64 hoặc URL đầy đủ, giữ nguyên
+  if (image.startsWith("/uploads/")) {
+    return `${BASE_URL}${image}`;
+  }
+  return image.startsWith("data:image")
+    ? image
+    : getValidImage(image) || DEFAULT_IMAGE;
+};
+
 export default function CategoryPage() {
   const { category } = useParams();
   const [filteredPosts, setFilteredPosts] = useState([]);
@@ -113,7 +128,7 @@ export default function CategoryPage() {
 
               {post.image && (
                 <img
-                  src={getValidImage(post?.image)}
+                  src={formatImage(post?.image)}
                   alt={getLocalizedText(post.title, translations.language)}
                   width={800}
                   height={600}

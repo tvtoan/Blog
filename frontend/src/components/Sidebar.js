@@ -11,6 +11,31 @@ import { useAdmin } from "@/app/context/AdminContext";
 import { getLocalizedText } from "@/lib/getLocalizedText";
 import useTranslation from "@/app/hooks/useTranslations";
 
+const DEFAULT_IMAGE = "/default-image.jpg";
+const BASE_URL = "http://localhost:5000";
+
+const formatImage = (image) => {
+  if (!image || typeof image !== "string") {
+    return DEFAULT_IMAGE;
+  }
+  if (image.startsWith("/uploads/")) {
+    return `${BASE_URL}${image}`;
+  }
+  if (image.startsWith("data:image/")) {
+    return image;
+  }
+  try {
+    const url = new URL(image);
+    const imageExtensions = /\.(jpg|jpeg|png|gif|webp)$/i;
+    if (imageExtensions.test(url.pathname)) {
+      return image;
+    }
+  } catch {
+    // Không phải URL hợp lệ
+  }
+  return DEFAULT_IMAGE;
+};
+
 const Sidebar = () => {
   const [isFocused, setIsFocused] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -19,9 +44,9 @@ const Sidebar = () => {
   const [archives, setArchives] = useState({});
   const { admin, loadingAdmin } = useAdmin();
   const router = useRouter();
+  console.log("admin in sidebar:", admin);
 
   const translations = useTranslation();
-
   const t = translations?.Sidebar || {};
 
   useEffect(() => {
@@ -125,8 +150,12 @@ const Sidebar = () => {
         ) : admin ? (
           <div className="text-left">
             <img
-              src={admin.avatar || "/hviet.jpg"}
-              alt={admin.name}
+              src={formatImage(admin.avatar)}
+              alt={getLocalizedText(
+                admin.name,
+                translations.language,
+                "No Name"
+              )}
               className="w-full h-auto object-cover mb-4 rounded"
             />
             <h3 className="font-semibold text-lg">

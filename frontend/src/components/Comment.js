@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { FaStar } from "react-icons/fa";
 import { likeComment, unLikeComment } from "@/app/services/commentService";
 import { useRouter } from "next/navigation";
 import { getUser } from "@/app/services/authService";
 import useTranslation from "@/app/hooks/useTranslations";
+import Skeleton from "./Skeleton";
 
 const DEFAULT_AVATAR = "/cv.jpg";
 
@@ -22,6 +23,7 @@ export default function Comment({
   const [likes, setLikes] = useState(comment.likes?.length || 0);
   const [isLiked, setIsLiked] = useState(false);
   const [localUser, setLocalUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   const translations = useTranslation();
@@ -30,6 +32,7 @@ export default function Comment({
   useEffect(() => {
     async function fetchUser() {
       try {
+        setLoading(true);
         const userData = await getUser();
         setLocalUser(userData);
         if (comment.likes?.includes(userData?._id)) {
@@ -37,6 +40,8 @@ export default function Comment({
         }
       } catch {
         setLocalUser(null);
+      } finally {
+        setLoading(false);
       }
     }
     fetchUser();
@@ -63,6 +68,8 @@ export default function Comment({
       alert(error.message || "Failed to toggle like");
     }
   };
+
+  if (loading) return <Skeleton variant="comment" />;
 
   const formattedDate = new Date(comment.createdAt).toLocaleString("en-US", {
     month: "long",

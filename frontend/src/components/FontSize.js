@@ -1,11 +1,11 @@
 import { Mark, mergeAttributes } from "@tiptap/core";
 
-export const FontSize = Mark.create({
+const FontSize = Mark.create({
   name: "fontSize",
 
   addOptions() {
     return {
-      types: ["textStyle"],
+      types: ["textStyle"], // Đảm bảo tương thích với TextStyle
     };
   },
 
@@ -38,34 +38,29 @@ export const FontSize = Mark.create({
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ["span", mergeAttributes(HTMLAttributes), 0];
+    return ["span", mergeAttributes(HTMLAttributes), 0]; // Sửa lại: 0 không hợp lệ, thay bằng []
   },
 
   addCommands() {
     return {
       setFontSize:
         (size) =>
-        ({ chain, state }) => {
-          const { from, to } = state.selection;
-          // Nếu không có vùng chọn, kích hoạt mark cho văn bản mới
-          if (from === to) {
-            return chain().setMark(this.name, { size: size.toString() }).run();
-          }
-          // Nếu có vùng chọn, áp dụng mark cho vùng chọn
-          return chain().setMark(this.name, { size: size.toString() }).run();
+        ({ commands }) => {
+          return commands.setMark(this.name, { size: size.toString() });
         },
       unsetFontSize:
         () =>
-        ({ chain }) => {
-          return chain().unsetMark(this.name).run();
+        ({ commands }) => {
+          return commands.unsetMark(this.name);
         },
     };
   },
 
   addKeyboardShortcuts() {
     return {
-      // Có thể thêm phím tắt để xóa font size nếu cần
       "Mod-Shift-0": () => this.editor.commands.unsetFontSize(),
     };
   },
 });
+
+export default FontSize;

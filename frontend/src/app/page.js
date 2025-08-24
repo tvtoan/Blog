@@ -10,6 +10,22 @@ import { FaArrowRight } from "react-icons/fa6";
 import { getLocalizedText } from "@/lib/getLocalizedText";
 import useTranslation from "@/app/hooks/useTranslations";
 import getValidImage from "@/lib/getValidImage";
+import Skeleton from "@/components/Skeleton";
+
+const DEFAULT_IMAGE = "/default-image.jpg";
+const BASE_URL = "http://localhost:5000"; // Tiền tố URL cho server local
+
+// Hàm định dạng ảnh
+const formatImage = (image) => {
+  if (!image) return DEFAULT_IMAGE;
+  // Nếu là đường dẫn tương đối, thêm BASE_URL; nếu là base64 hoặc URL đầy đủ, giữ nguyên
+  if (image.startsWith("/uploads/")) {
+    return `${BASE_URL}${image}`;
+  }
+  return image.startsWith("data:image")
+    ? image
+    : getValidImage(image) || DEFAULT_IMAGE;
+};
 
 export default function Home() {
   const [posts, setPosts] = useState([]);
@@ -18,13 +34,12 @@ export default function Home() {
   const [error, setError] = useState(null);
   const translations = useTranslation();
   const t = translations?.Home || {};
-  const user = useAuthUser();
+  const { user } = useAuthUser();
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         const fetchedPosts = await getPosts();
-        // Lọc chỉ lấy bài viết không phải bản nháp (isDraft: false)
         const publishedPosts = fetchedPosts.filter((post) => !post.isDraft);
         setPosts(publishedPosts);
       } catch (err) {
@@ -45,19 +60,8 @@ export default function Home() {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        {user?.role === "admin" && (
-          <Link
-            href="/create-post"
-            className="bg-blue-500 text-white px-4 py-2 rounded"
-          >
-            {t.create}
-          </Link>
-        )}
-      </div>
-
       {loadingPosts ? (
-        <p className="text-center text-gray-500">{t.loading}</p>
+        <Skeleton variant="home" />
       ) : error ? (
         <p className="text-center text-red-500">{t.error}</p>
       ) : displayedPosts.length === 0 ? (
@@ -89,7 +93,7 @@ export default function Home() {
                 </div>
               </div>
               <img
-                src={getValidImage(post?.image)}
+                src={formatImage(post?.image)}
                 alt={getLocalizedText(post.title, translations.language)}
                 width={800}
                 height={600}

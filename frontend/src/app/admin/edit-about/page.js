@@ -1,21 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { getAboutData, updateAboutData } from "@/app/services/aboutService";
-import useAuthUser from "@/app/hooks/useAuthUser";
-import useTranslation from "@/app/hooks/useTranslations";
 import TextareaAutosize from "react-textarea-autosize";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import TextStyle from "@tiptap/extension-text-style";
-import { FontSize } from "@/components/FontSize";
+import FontSize from "@/components/FontSize";
 import EditorToolbar from "@/components/EditorToolbar";
+import { getAboutData, updateAboutData } from "@/app/services/aboutService";
 import mammoth from "mammoth";
 
+const DEFAULT_IMAGE = "/default-image.jpg";
+const BASE_URL = "http://localhost:5000"; // Base URL for local server
+
+// Function to format image URLs
+const formatImage = (image) => {
+  if (!image) return DEFAULT_IMAGE;
+  if (image.startsWith("/uploads/")) {
+    return `${BASE_URL}${image}`;
+  }
+  return image.startsWith("data:image") ? image : image || DEFAULT_IMAGE;
+};
+
 export default function EditAboutPage() {
-  const { user, loading } = useAuthUser();
+  const router = useRouter();
   const [form, setForm] = useState({
     title: { vi: "", jp: "" },
     excerpt: { vi: "", jp: "" },
@@ -25,17 +35,14 @@ export default function EditAboutPage() {
       jp: { type: "doc", content: [] },
     },
   });
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [fetching, setFetching] = useState(true);
-  const translations = useTranslation();
-  const t = translations?.EditAbout || {};
-  const router = useRouter();
+  const [error, setError] = useState(null);
 
-  // Initialize Tiptap editors for Vietnamese and Japanese content
   const editorVi = useEditor({
     extensions: [
       StarterKit,
-      Image.configure({ inline: true, allowBase64: true }),
+      Image.configure({ inline: true, allowBase64: false }),
       TextStyle,
       FontSize,
     ],
@@ -53,7 +60,7 @@ export default function EditAboutPage() {
   const editorJp = useEditor({
     extensions: [
       StarterKit,
-      Image.configure({ inline: true, allowBase64: true }),
+      Image.configure({ inline: true, allowBase64: false }),
       TextStyle,
       FontSize,
     ],
@@ -68,273 +75,370 @@ export default function EditAboutPage() {
     },
   });
 
-  // Fetch data
   useEffect(() => {
     const fetch = async () => {
       try {
         const data = await getAboutData();
-        const safeData = data || {
-          title: { vi: "", jp: "" },
-          excerpt: { vi: "", jp: "" },
-          image: "",
-          content: {
-            vi: { type: "doc", content: [] },
-            jp: { type: "doc", content: [] },
-          },
-        };
+        const formattedImage = formatImage(data.image);
         setForm({
-          title:
-            typeof safeData.title === "object"
-              ? safeData.title
-              : { vi: safeData.title || "", jp: "" },
-          excerpt:
-            typeof safeData.excerpt === "object"
-              ? safeData.excerpt
-              : { vi: safeData.excerpt || "", jp: "" },
-          image: safeData.image || "",
+          title: data.title || { vi: "", jp: "" },
+          excerpt: data.excerpt || { vi: "", jp: "" },
+          image: formattedImage,
           content: {
-            vi: safeData.content?.vi || { type: "doc", content: [] },
-            jp: safeData.content?.jp || { type: "doc", content: [] },
+            vi: data.content?.vi || { type: "doc", content: [] },
+            jp: data.content?.jp || { type: "doc", content: [] },
           },
         });
         if (editorVi)
           editorVi.commands.setContent(
-            safeData.content?.vi || { type: "doc", content: [] }
+            data.content?.vi || { type: "doc", content: [] }
           );
         if (editorJp)
           editorJp.commands.setContent(
-            safeData.content?.jp || { type: "doc", content: [] }
+            data.content?.jp || { type: "doc", content: [] }
           );
       } catch (err) {
-        console.error(
-          "Failed to fetch:",
-          err.response?.data || err.message || "Unknown error",
-          "Status:",
-          err.response?.status
-        );
+        setError("Không tìm thấy trang About.");
+        router.push("/admin");
       } finally {
-        setFetching(false);
+        setLoading(false);
       }
     };
-    if (!user || user.role !== "admin") return;
     fetch();
-  }, [user, editorVi, editorJp]);
+  }, [editorVi, editorJp, router]);
 
-  const handleFieldChange = (field, lang, value) => {
+  const handleInputChange = useCallback((field, lang, value) => {
     setForm((prev) => ({
       ...prev,
       [field]: { ...prev[field], [lang]: value },
     }));
-  };
+  }, []);
 
-  const handleChange = (field, value) => {
+  const handleChange = useCallback((field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
-  };
+  }, []);
 
-  const handleDrop = async (e, lang) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const file = e.dataTransfer?.files?.[0];
-    if (!file) {
-      alert("Không có file được chọn.");
+  const handleFileChange = useCallback((e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const maxSize = 1 * 1024 * 1024; // 1MB
+    if (file.size > maxSize) {
+      setError("Ảnh quá lớn (tối đa 1MB).");
       return;
     }
 
-    const ext = file.name.split(".").pop().toLowerCase();
-    let content = "";
+    const filetypes = ["image/jpeg", "image/jpg", "image/png"];
+    if (!filetypes.includes(file.type)) {
+      setError("Chỉ hỗ trợ ảnh PNG/JPEG.");
+      return;
+    }
 
-    try {
-      if (ext === "docx") {
-        content = await extractDocxContent(file);
-      } else {
-        alert("Chỉ hỗ trợ file .docx");
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setForm((prev) => ({
+        ...prev,
+        image: event.target.result,
+      }));
+      setError(null);
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
+  const handleImagePaste = useCallback((event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const items = event.clipboardData?.items;
+    if (!items) return;
+
+    for (const item of items) {
+      if (item.type.startsWith("image/")) {
+        const file = item.getAsFile();
+        if (file.size > 1 * 1024 * 1024) {
+          setError("Ảnh quá lớn (tối đa 1MB).");
+          return;
+        }
+
+        const filetypes = ["image/jpeg", "image/jpg", "image/png"];
+        if (!filetypes.includes(file.type)) {
+          setError("Chỉ hỗ trợ ảnh PNG/JPEG.");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          setForm((prev) => ({
+            ...prev,
+            image: reader.result,
+          }));
+          setError(null);
+        };
+        reader.readAsDataURL(file);
+        break;
+      }
+    }
+  }, []);
+
+  const handleDrop = useCallback(
+    async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const files = Array.from(e.dataTransfer?.files || []);
+      if (!files.length) {
+        setError("Không có file được chọn.");
         return;
       }
 
-      const editor = lang === "jp" ? editorJp : editorVi;
-      if (editor) {
-        editor.commands.setContent(content, "html");
-      } else {
-        alert("Không xác định được vùng biên tập.");
-      }
-    } catch (err) {
-      console.error("Error in handleDrop:", err);
-      alert("Không thể đọc file: " + err.message);
-    }
-  };
+      const validTypes = [
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ];
+      const maxSize = 10 * 1024 * 1024; // 10MB
 
-  const handleDragOver = (e) => {
+      const targetClass = e.currentTarget?.className || "";
+      const isJp = targetClass.includes("tiptap-jp");
+      const isVi = targetClass.includes("tiptap-vi");
+      const editor = isJp ? editorJp : isVi ? editorVi : null;
+
+      if (!editor) {
+        setError("Không xác định được vùng biên tập.");
+        return;
+      }
+
+      try {
+        for (const file of files) {
+          if (!validTypes.includes(file.type)) {
+            setError(`File ${file.name} không được hỗ trợ`);
+            continue;
+          }
+          if (file.size > maxSize) {
+            setError(`File ${file.name} quá lớn, tối đa 10MB`);
+            continue;
+          }
+
+          const ext = file.name.split(".").pop().toLowerCase();
+          let content = "";
+          if (ext === "docx") {
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await mammoth.convertToHtml({ arrayBuffer });
+            content = result.value || "<p>Nội dung trống</p>";
+          }
+
+          if (content) {
+            editor.commands.insertContent(content);
+          } else {
+            setError(`Không thể đọc nội dung từ ${file.name}`);
+          }
+        }
+      } catch (err) {
+        console.error("Error in handleDrop:", err);
+        setError(`Lỗi khi xử lý file: ${err.message}`);
+      }
+    },
+    [editorVi, editorJp]
+  );
+
+  const handleDragOver = useCallback((e) => {
     e.preventDefault();
     e.currentTarget.classList.add("border-blue-400", "bg-blue-50");
-  };
+  }, []);
 
-  const handleDragLeave = (e) => {
+  const handleDragLeave = useCallback((e) => {
     e.preventDefault();
     e.currentTarget.classList.remove("border-blue-400", "bg-blue-50");
-  };
+  }, []);
 
-  const extractDocxContent = async (file) => {
-    const arrayBuffer = await file.arrayBuffer();
-    const result = await mammoth.convertToHtml({
-      arrayBuffer,
-      convertImage: (element) => {
-        return new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            const base64Image = e.target.result;
-            resolve({
-              src: base64Image,
-              alt: element.alt || "Image from Word",
-            });
-          };
-          reader.readAsDataURL(element.content);
-        });
-      },
-    });
-    return result.value; // HTML string
-  };
-
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     setSaving(true);
+    setError(null);
     try {
-      await updateAboutData(form);
-      alert(t.saved);
+      const contentSize = Buffer.byteLength(
+        JSON.stringify(form.content),
+        "utf8"
+      );
+      if (contentSize > 2 * 1024 * 1024) {
+        throw new Error("Nội dung quá lớn (tối đa 2MB).");
+      }
+
+      const payload = {
+        title: form.title,
+        excerpt: form.excerpt,
+        image: form.image || "",
+        content: form.content,
+      };
+
+      console.log("Payload gửi lên:", payload); // Debug payload
+      await updateAboutData(payload);
+      alert("✅ Cập nhật thành công");
+      router.push("/about");
     } catch (err) {
-      console.error("Failed to save:", err.response?.data || err.message);
-      alert(t.error + (err.response?.data?.message || err.message));
+      console.error("Error saving about page:", err);
+      setError(
+        err.response?.data?.message || err.message || "Lỗi khi cập nhật."
+      );
     } finally {
       setSaving(false);
     }
-  };
+  }, [form, router]);
 
-  if (loading || fetching)
-    return <p className="text-center mt-10">{t.loading}</p>;
-  if (!user || user.role !== "admin")
-    return <p className="text-center mt-10 text-red-600">{t.noAccess}</p>;
+  if (loading) return <p className="mt-10 text-center">Đang tải dữ liệu...</p>;
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10">
-      <h1 className="text-2xl font-bold mb-6 text-[#cfac1e]">{t.editTitle}</h1>
-
-      <div className="space-y-5">
-        <div className="grid md:grid-cols-2 gap-4">
+    <div className="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">
+        ✏️ Sửa trang About
+      </h1>
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+          {error}
+        </div>
+      )}
+      <div className="space-y-6">
+        <div className="grid md:grid-cols-2 gap-6">
           <div>
-            <label className="block mb-1 font-semibold">
-              {t.placeholderTitle}
+            <label className="block mb-2 text-sm font-medium text-gray-700">
+              Tiêu đề (Tiếng Việt)
             </label>
             <TextareaAutosize
-              className="border p-3 rounded w-full"
+              className="w-full p-3 bg-gray-50 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 hover:bg-gray-100 transition-all duration-200 text-gray-800 placeholder-gray-400"
               minRows={1}
               value={form.title.vi}
-              onChange={(e) => handleFieldChange("title", "vi", e.target.value)}
+              onChange={(e) => handleInputChange("title", "vi", e.target.value)}
+              placeholder="Nhập tiêu đề tiếng Việt"
             />
           </div>
           <div>
-            <label className="block mb-1 font-semibold">
-              {t.placeholderTitle_1}
+            <label className="block mb-2 text-sm font-medium text-gray-700">
+              Tiêu đề (Tiếng Nhật)
             </label>
             <TextareaAutosize
-              className="border p-3 rounded w-full"
+              className="w-full p-3 bg-gray-50 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 hover:bg-gray-100 transition-all duration-200 text-gray-800 placeholder-gray-400"
               minRows={1}
               value={form.title.jp}
-              onChange={(e) => handleFieldChange("title", "jp", e.target.value)}
+              onChange={(e) => handleInputChange("title", "jp", e.target.value)}
+              placeholder="Nhập tiêu đề tiếng Nhật"
             />
           </div>
           <div>
-            <label className="block mb-1 font-semibold">
-              {t.placeholderExcerpt}
+            <label className="block mb-2 text-sm font-medium text-gray-700">
+              Tóm tắt (Tiếng Việt)
             </label>
             <TextareaAutosize
-              className="border p-3 rounded w-full"
+              className="w-full p-3 bg-gray-50 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 hover:bg-gray-100 transition-all duration-200 text-gray-800 placeholder-gray-400"
               minRows={2}
               value={form.excerpt.vi}
               onChange={(e) =>
-                handleFieldChange("excerpt", "vi", e.target.value)
+                handleInputChange("excerpt", "vi", e.target.value)
               }
+              placeholder="Nhập tóm tắt tiếng Việt"
             />
           </div>
           <div>
-            <label className="block mb-1 font-semibold">
-              {t.placeholderExcerpt_1}
+            <label className="block mb-2 text-sm font-medium text-gray-700">
+              Tóm tắt (Tiếng Nhật)
             </label>
             <TextareaAutosize
-              className="border p-3 rounded w-full"
+              className="w-full p-3 bg-gray-50 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 hover:bg-gray-100 transition-all duration-200 text-gray-800 placeholder-gray-400"
               minRows={2}
               value={form.excerpt.jp}
               onChange={(e) =>
-                handleFieldChange("excerpt", "jp", e.target.value)
+                handleInputChange("excerpt", "jp", e.target.value)
               }
+              placeholder="Nhập tóm tắt tiếng Nhật"
             />
           </div>
         </div>
 
         <div>
-          <label className="block mb-1 font-semibold">
-            {t.placeholderImage}
+          <label className="block mb-2 text-sm font-medium text-gray-700">
+            Ảnh bìa (URL, dán ảnh, hoặc upload)
           </label>
           <input
             type="text"
-            className="border p-3 rounded w-full"
+            className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none hover:bg-gray-100 transition-all duration-200 text-gray-800 placeholder-gray-400 mb-2"
             value={form.image}
             onChange={(e) => handleChange("image", e.target.value)}
+            onPaste={handleImagePaste}
+            placeholder="Nhập URL ảnh hoặc dán ảnh trực tiếp"
           />
+          <div className="relative">
+            <input
+              type="file"
+              id="file-upload"
+              accept="image/jpeg,image/jpg,image/png"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            <label
+              htmlFor="file-upload"
+              className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition-all duration-200 cursor-pointer text-center block"
+            >
+              Chọn file ảnh từ máy
+            </label>
+          </div>
           {form.image && (
             <img
-              src={form.image}
+              src={formatImage(form.image)}
               alt="Preview"
-              className="mt-2 rounded border max-w-xs"
+              className="mt-3 rounded-lg border border-gray-200 shadow-sm max-w-sm"
             />
           )}
         </div>
 
-        <div className="space-y-6">
-          <div
-            className="border rounded-lg p-4 bg-gray-50 tiptap-vi"
-            onDrop={(e) => handleDrop(e, "vi")}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-          >
-            <label className="block mb-1 font-semibold">{t.contentLabel}</label>
-            {editorVi && (
-              <>
-                <EditorToolbar editor={editorVi} />
-                <EditorContent
-                  editor={editorVi}
-                  className="p-2 w-full rounded min-h-[200px] focus:outline-none focus:border-transparent"
-                />
-              </>
-            )}
-          </div>
-          <div
-            className="border rounded-lg p-4 bg-gray-50 tiptap-jp"
-            onDrop={(e) => handleDrop(e, "jp")}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-          >
-            <label className="block mb-1 font-semibold">
-              {t.contentLabel_1}
-            </label>
-            {editorJp && (
-              <>
-                <EditorToolbar editor={editorJp} />
-                <EditorContent
-                  editor={editorJp}
-                  className="p-2 w-full rounded min-h-[200px] focus:outline-none focus:border-transparent"
-                />
-              </>
-            )}
-          </div>
+        <div
+          className="relative rounded-xl border border-gray-200 p-5 bg-white shadow-sm hover:shadow-md transition-all tiptap-vi"
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          <label className="block mb-3 text-base font-semibold text-gray-800">
+            Nội dung (Tiếng Việt)
+          </label>
+          {editorVi && (
+            <>
+              <EditorToolbar editor={editorVi} />
+              <EditorContent
+                editor={editorVi}
+                className="tiptap tiptap-vi w-full rounded-lg min-h-[200px] bg-gray-50 p-4"
+              />
+            </>
+          )}
+        </div>
+
+        <div
+          className="relative rounded-xl border border-gray-200 p-5 bg-white shadow-sm hover:shadow-md transition-all tiptap-jp"
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          <label className="block mb-3 text-base font-semibold text-gray-800">
+            Nội dung (Tiếng Nhật)
+          </label>
+          {editorJp && (
+            <>
+              <EditorToolbar editor={editorJp} />
+              <EditorContent
+                editor={editorJp}
+                className="tiptap tiptap-jp w-full rounded-lg min-h-[200px] bg-gray-50 p-4"
+              />
+            </>
+          )}
         </div>
 
         <div className="text-right pt-4">
           <button
             onClick={handleSave}
             disabled={saving}
-            className="bg-[#cfac1e] text-white font-semibold px-6 py-2 rounded hover:bg-[#b89514] disabled:opacity-50"
+            className={`px-6 py-2 rounded-lg font-semibold text-white transition-all duration-200 shadow-md ${
+              saving
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
           >
-            {saving ? t.saving : t.save}
+            {saving ? "Đang lưu..." : "Lưu thay đổi"}
           </button>
         </div>
+
+        {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
       </div>
     </div>
   );

@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import Image from "next/image";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { FaFacebook, FaRegStar, FaPen, FaStar } from "react-icons/fa6";
 import DividerIcon from "@/components/DividerIcon";
 import { montserrat } from "@/lib/font";
@@ -14,9 +13,33 @@ import useAuthUser from "@/app/hooks/useAuthUser";
 import { useRouter } from "next/navigation";
 import useTranslation from "@/app/hooks/useTranslations";
 import { getLocalizedText } from "@/lib/getLocalizedText";
-import getValidImage from "@/lib/getValidImage";
+import Skeleton from "@/components/Skeleton";
 
-// Hàm để render nội dung Tiptap JSON
+const DEFAULT_IMAGE = "/default-image.jpg";
+const BASE_URL = "http://localhost:5000";
+
+const formatImage = (image) => {
+  if (!image || typeof image !== "string") {
+    return DEFAULT_IMAGE;
+  }
+  if (image.startsWith("/uploads/")) {
+    return `${BASE_URL}${image}`;
+  }
+  if (image.startsWith("data:image/")) {
+    return image;
+  }
+  try {
+    const url = new URL(image);
+    const imageExtensions = /\.(jpg|jpeg|png|gif|webp)$/i;
+    if (imageExtensions.test(url.pathname)) {
+      return image;
+    }
+  } catch {
+    // Không phải URL hợp lệ
+  }
+  return DEFAULT_IMAGE;
+};
+
 const renderTiptapContent = (content, language, defaultContent) => {
   if (!content || !content[language]) return defaultContent;
 
@@ -48,6 +71,7 @@ const renderTiptapContent = (content, language, defaultContent) => {
 export default function AboutPage() {
   const [post, setPost] = useState(null);
   const [isLiked, setIsLiked] = useState(false);
+  const [loadingData, setLoadingData] = useState(true);
 
   const { user, loading } = useAuthUser();
   const router = useRouter();
@@ -63,6 +87,7 @@ export default function AboutPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoadingData(true);
         const data = await getAboutData();
         setPost(data);
 
@@ -82,13 +107,15 @@ export default function AboutPage() {
           },
           likes: [],
         });
+      } finally {
+        setLoadingData(false);
       }
     };
 
     fetchData();
   }, [language, t, user]);
 
-  const handleLikeToggle = async () => {
+  const handleLikeToggle = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -98,7 +125,14 @@ export default function AboutPage() {
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [isLiked, user]);
+
+  const content = useMemo(
+    () => renderTiptapContent(post?.content, language, t.defaultContent),
+    [post?.content, language, t.defaultContent]
+  );
+
+  if (loadingData) return <Skeleton variant="about" />;
 
   if (!post) return <div className="text-center mt-10">{t.loading}</div>;
 
@@ -124,8 +158,8 @@ export default function AboutPage() {
 
       {post.image && (
         <div className="flex justify-center mt-6 mb-10">
-          <Image
-            src={getValidImage(post?.image)}
+          <img
+            src={formatImage(post?.image)}
             alt={getLocalizedText(post.title, language, t.defaultTitle)}
             width={750}
             height={420}
@@ -141,7 +175,7 @@ export default function AboutPage() {
       )}
 
       <div className="max-w-[750px] mx-auto text-[16px] text-[#555] leading-relaxed space-y-4">
-        {renderTiptapContent(post.content, language, t.defaultContent)}
+        {content}
       </div>
 
       <div className="w-full max-w-[750px] mx-auto mt-16">
