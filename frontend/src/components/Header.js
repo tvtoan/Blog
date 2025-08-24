@@ -247,7 +247,7 @@ const Header = ({ showAdminSidebar, setShowAdminSidebar }) => {
               toggleLanguage();
               handleMenuItemClick();
             }}
-            className="block text-center py-3 hover:bg-gray-100 w-full text-left"
+            className="block text-center py-3 hover:bg-gray-100 w-full"
           >
             {language === "vi" ? "日本語" : "VIETNAMESE"}
           </button>
@@ -257,7 +257,7 @@ const Header = ({ showAdminSidebar, setShowAdminSidebar }) => {
                 setShowAdminSidebar(!showAdminSidebar);
                 handleMenuItemClick();
               }}
-              className="block text-center py-3 hover:bg-gray-100 w-full text-left"
+              className="block text-center py-3 hover:bg-gray-100 w-full"
             >
               {t.options}
             </button>
