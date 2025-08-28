@@ -287,3 +287,46 @@ export const subscribe = async (req, res) => {
     res.status(500).json({ message: "Lỗi gửi mail", error: error.message });
   }
 };
+
+export const deleteUser = async (req, res) => {
+  try {
+    const currentUser = req.user;
+
+    // Chỉ admin mới có quyền
+    if (!currentUser || currentUser.role !== "admin") {
+      return res.status(403).json({ message: "Truy cập bị từ chối" });
+    }
+
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ message: "Thiếu ID người dùng" });
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+    }
+
+    // Không cho admin tự xoá chính mình
+    if (user._id.toString() === currentUser.id) {
+      return res
+        .status(400)
+        .json({ message: "Bạn không thể tự xoá tài khoản admin của mình" });
+    }
+
+    // Nếu user có avatar là file upload => xoá luôn file
+    if (user.avatar && user.avatar.startsWith("/uploads")) {
+      const oldAvatarPath = path.join(path.resolve(), user.avatar);
+      if (fs.existsSync(oldAvatarPath)) {
+        fs.unlinkSync(oldAvatarPath);
+      }
+    }
+
+    await User.findByIdAndDelete(id);
+
+    res.json({ message: "Người dùng đã được xoá thành công" });
+  } catch (error) {
+    console.error("Delete user error:", error);
+    res.status(500).json({ message: "Lỗi server", error: error.message });
+  }
+};

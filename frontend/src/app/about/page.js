@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import useTranslation from "@/app/hooks/useTranslations";
 import { getLocalizedText } from "@/lib/getLocalizedText";
 import Skeleton from "@/components/Skeleton";
+import getValidImage from "@/lib/getValidImage";
 
 const DEFAULT_IMAGE = "/default-image.jpg";
 const BASE_URL = "http://localhost:5000";
@@ -207,7 +208,7 @@ export default function AboutPage() {
             {post.likes?.map((u, idx) => (
               <img
                 key={idx}
-                src={u.avatar || "/avatars/default.jpg"}
+                src={getValidImage(u.avatar) || "/avatars/default.jpg"}
                 alt={`like-${idx}`}
                 className="w-7 h-7 rounded-full border-2 border-white shadow"
               />

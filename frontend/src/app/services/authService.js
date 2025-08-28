@@ -80,3 +80,14 @@ export const subscribe = async (email) => {
     throw new Error(error.response?.data?.message || "Failed to subscribe");
   }
 };
+
+export const deleteUser = async (id) => {
+  try {
+    const response = await api.delete(`/auth/users/${id}`);
+    console.log("Delete user response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Delete user error:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || "Failed to delete user");
+  }
+};

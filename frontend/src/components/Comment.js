@@ -7,8 +7,10 @@ import { useRouter } from "next/navigation";
 import { getUser } from "@/app/services/authService";
 import useTranslation from "@/app/hooks/useTranslations";
 import Skeleton from "./Skeleton";
+import getValidImage from "@/lib/getValidImage";
 
-const DEFAULT_AVATAR = "/cv.jpg";
+const DEFAULT_AVATAR =
+  "https://cdn11.dienmaycholon.vn/filewebdmclnew/public/userupload/files/Image%20FP_2024/avatar-cute-3.jpg";
 
 export default function Comment({
   comment,
@@ -98,11 +100,12 @@ export default function Comment({
 
         <div className="flex-1">
           <div className="flex items-center gap-4 mb-2">
-            <div className="w-[74px] h-[74px] rounded-full overflow-hidden shrink-0 border">
+            <div className="w-[74px] h-[74px] rounded-full overflow-hidden shrink-0 border bg-gray-100">
               <img
-                src={comment.user?.avatar || DEFAULT_AVATAR}
-                alt={comment.user?.name || "User"}
+                src={getValidImage(comment?.user?.avatar) || DEFAULT_AVATAR}
+                alt={comment?.user?.name || "User"}
                 className="w-full h-full object-cover"
+                onError={(e) => (e.currentTarget.src = DEFAULT_AVATAR)} // fallback khi ảnh lỗi
               />
             </div>
 

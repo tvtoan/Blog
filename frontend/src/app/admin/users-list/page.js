@@ -1,20 +1,28 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react"; // Thêm import useMemo
-import { getUsers } from "@/app/services/authService";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { getUsers, deleteUser } from "@/app/services/authService";
 import useTranslation from "@/app/hooks/useTranslations";
 import { getLocalizedText } from "@/lib/getLocalizedText";
+import { FaTrash, FaUserShield, FaUser } from "react-icons/fa";
 
 export default function UserListPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(null);
   const translations = useTranslation();
   const t = translations?.UserList || {};
 
   const fetchUsers = useCallback(async () => {
     try {
       const data = await getUsers();
-      setUsers(data);
+      // Admin đứng đầu
+      const sorted = [...data].sort((a, b) => {
+        if (a.role === "admin" && b.role !== "admin") return -1;
+        if (a.role !== "admin" && b.role === "admin") return 1;
+        return 0;
+      });
+      setUsers(sorted);
     } catch (error) {
       console.error("Failed to fetch users:", error);
     } finally {
@@ -25,6 +33,20 @@ export default function UserListPage() {
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xoá user này không?")) return;
+    try {
+      setDeleting(id);
+      await deleteUser(id);
+      setUsers((prev) => prev.filter((u) => u._id !== id));
+    } catch (error) {
+      console.error("Delete user failed:", error);
+      alert(error.message || "Xoá user thất bại");
+    } finally {
+      setDeleting(null);
+    }
+  };
 
   const userList = useMemo(
     () =>
@@ -46,62 +68,63 @@ export default function UserListPage() {
   }
 
   return (
-    <div className="p-4 md:p-8 bg-gray-50 min-h-[calc(100vh-60px)] rounded-lg shadow-sm max-w-6xl mx-auto my-10 w-full ">
-      <h1 className="text-2xl md:text-3xl font-bold text-yellow-600 mb-8 text-center uppercase tracking-wider">
+    <div className="p-4 md:p-8 bg-gray-50 min-h-[calc(100vh-60px)] max-w-6xl mx-auto my-10 w-full">
+      <h1 className="text-3xl font-bold text-yellow-600 mb-10 text-center uppercase tracking-wide">
         {t.title || "User List"}
       </h1>
-      <div className="hidden md:block overflow-x-auto">
-        <table className="w-full border border-gray-300 rounded-lg overflow-hidden text-sm shadow-sm">
-          <thead>
-            <tr className="bg-yellow-100 text-[#444] uppercase text-xs">
-              <th className="p-3 border">👤 {t.name}</th>
-              <th className="p-3 border">📧 {t.email}</th>
-              <th className="p-3 border">🎓 {t.role}</th>
-              <th className="p-3 border">📝 {t.bio}</th>
-              <th className="p-3 border">💼 {t.job}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {userList.map((user) => (
-              <tr
-                key={user._id}
-                className="hover:bg-yellow-50 transition-colors cursor-pointer border-b last:border-b-0"
-              >
-                <td className="p-3 border text-gray-800 font-semibold">
-                  {user.name}
-                </td>
-                <td className="p-3 border text-gray-600">{user.email}</td>
-                <td className="p-3 border text-gray-600 capitalize">
-                  {user.role}
-                </td>
-                <td className="p-3 border text-gray-500 italic">{user.bio}</td>
-                <td className="p-3 border text-gray-500">{user.job}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="block md:hidden space-y-4 mt-6">
+
+      {/* Card Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {userList.map((user) => (
           <div
             key={user._id}
-            className="border border-gray-200 rounded-xl p-5 bg-white shadow-sm hover:shadow-md transition"
+            className="relative bg-white rounded-2xl shadow-md hover:shadow-xl transition p-6 flex flex-col items-center text-center"
           >
-            <p className="text-yellow-600 font-semibold text-lg mb-2">
+            {/* Avatar */}
+            <div className="w-20 h-20 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 shadow-md">
+              {user.role === "admin" ? (
+                <FaUserShield size={32} />
+              ) : (
+                <FaUser size={32} />
+              )}
+            </div>
+
+            {/* Info */}
+            <h2 className="mt-4 text-lg font-semibold text-gray-900">
               {user.name}
-            </p>
-            <p className="text-sm text-gray-700">
-              📧 <span className="font-medium">{user.email}</span>
-            </p>
-            <p className="text-sm text-gray-700 mt-1">
-              🎓 <span className="capitalize">{user.role}</span>
-            </p>
-            <p className="text-sm text-gray-600 italic mt-1">
-              📝 <span>{user.bio}</span>
-            </p>
-            <p className="text-sm text-gray-600 mt-1">
-              💼 <span>{user.job}</span>
-            </p>
+            </h2>
+            <p className="text-sm text-gray-500">{user.email}</p>
+
+            {/* Role Badge */}
+            <span
+              className={`mt-3 px-3 py-1 text-xs font-medium rounded-full ${
+                user.role === "admin"
+                  ? "bg-blue-100 text-blue-700"
+                  : "bg-gray-100 text-gray-600"
+              }`}
+            >
+              {user.role}
+            </span>
+
+            {/* Admin có thêm Bio + Job */}
+            {user.role === "admin" && (
+              <>
+                <p className="mt-3 text-sm text-gray-600 italic">{user.bio}</p>
+                <p className="mt-1 text-sm text-gray-600">{user.job}</p>
+              </>
+            )}
+
+            {/* Delete Button (ẩn cho admin) */}
+            {user.role !== "admin" && (
+              <button
+                onClick={() => handleDelete(user._id)}
+                disabled={deleting === user._id}
+                className="mt-5 w-full flex items-center justify-center gap-2 px-4 py-2 text-sm bg-red-500 text-white rounded-xl shadow hover:bg-red-600 active:scale-95 disabled:opacity-50 transition"
+              >
+                <FaTrash size={14} />
+                {deleting === user._id ? "Deleting..." : t.delete || "Delete"}
+              </button>
+            )}
           </div>
         ))}
       </div>

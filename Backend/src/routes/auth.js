@@ -9,6 +9,7 @@ import {
   updateAdmin,
   getUsers,
   subscribe,
+  deleteUser,
 } from "../controllers/AuthController.js";
 import authMiddleware from "../middlewares/auth.js";
 
@@ -59,5 +60,6 @@ router.get(
 );
 
 router.post("/subscribe", subscribe);
+router.delete("/users/:id", authMiddleware, deleteUser);
 
 export default router;
